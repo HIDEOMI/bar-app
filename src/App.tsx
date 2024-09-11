@@ -1,11 +1,22 @@
 import React, { useEffect, useState } from 'react';
-// import logo from './logo.svg';
+import ReactDOM from 'react-dom';
 import './App.css';
-import { auth } from './firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-import Login from './Login';
-// import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+
+import MenuPage from './pages/MenuPage';
+import AddProductPage from './pages/AddProductPage';
+import InventoryManagementPage from './pages/InventoryManagementPage';
+
+// import logo from './logo.svg';
+import Login from './pages/LoginPage';
 // import Dashboard from './Dashboard';
+import { auth } from './firebase/firebaseConfig';
+import { onAuthStateChanged } from 'firebase/auth';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
+
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // toastify のスタイルシート
+
 
 const App: React.FC = () => {
   const [user, setUser] = useState<any>(null);
@@ -23,16 +34,18 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="App">
-      {user ? <h1>Welcome, {user.displayName}</h1> : <Login />}
-    </div>
-    // <Router>
-    //   <Routes>
-    //     <Route path="/login" element={<Login />} />
-    //     <Route path="/dashboard" element={<Dashboard />} />
-    //     <Route path="/" element={<Navigate to="/login" />} />
-    //   </Routes>
-    // </Router>
+    <Router>
+      <nav>
+        <a href="/menu">Menu</a>
+        <a href="/add-product">Add Product</a>
+        <a href="/inventory">Inventory Management</a>
+      </nav>
+      <Routes>
+        <Route path="/menu" element={<MenuPage />} />
+        <Route path="/add-product" element={<AddProductPage />} />
+        <Route path="/inventory" element={<InventoryManagementPage />} />
+      </Routes>
+    </Router>
   );
 };
 

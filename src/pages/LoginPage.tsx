@@ -1,6 +1,6 @@
 // src/Login.tsx
 import React from 'react';
-import { auth } from './firebase';
+import { auth } from '../firebase/firebaseConfig';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 const Login: React.FC = () => {
