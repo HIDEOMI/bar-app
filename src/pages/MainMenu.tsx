@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { getProductsByCategory } from "../services/products";
+import { createOrder } from "../services/orders";
 import { Product, CartItem } from "../types/types";
+import { useAuth } from "../components/AuthProvider";
+
 
 const MainMenu: React.FC = () => {
+    const { user } = useAuth();
     const [products, setProducts] = useState<Product[]>([]);
     const [category, setCategory] = useState("all");
     const [loading, setLoading] = useState(false);
     const [cart, setCart] = useState<CartItem[]>([]);
+    const [totalPrice, setTotalPrice] = useState(0);
+    const [note, setNote] = useState("");
+
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -25,7 +32,7 @@ const MainMenu: React.FC = () => {
         fetchProducts();
     }, [category]);
 
-    // 商品をカートに追加する関数
+    /** 商品をカートに追加する関数 */
     const handleAddToCart = (product: Product) => {
         const existingItem = cart.find(item => item.product.id === product.id);
         if (existingItem) {
@@ -39,7 +46,35 @@ const MainMenu: React.FC = () => {
             // カートに新しい商品を追加する
             setCart([...cart, { product, quantity: 1 }]);
         }
+        setTotalPrice(totalPrice + product.price);
     };
+
+    /** 注文を確定してFirestoreに保存する関数 */
+    const handleOrderSubmit = async () => {
+        if (!user) {
+            console.error("ログインしてください");
+            return;
+        }
+
+        const orderItems = cart.map(item => ({
+            productId: item.product.id,
+            name: item.product.name,
+            quantity: item.quantity,
+            price: item.product.price,
+        }));
+
+        try {
+            const orderId = await createOrder(user.uid, orderItems, totalPrice, note);
+            console.log("注文が確定しました！注文ID:", orderId);
+            // 注文が確定した後、カートをリセット
+            setCart([]);
+            setTotalPrice(0);
+            setNote("");
+        } catch (error) {
+            console.error("注文確定時にエラーが発生しました:", error);
+        }
+    };
+
 
     return (
         <div>
@@ -87,6 +122,14 @@ const MainMenu: React.FC = () => {
                             </li>
                         ))}
                     </ul>
+                    <p>合計金額: ¥{totalPrice}</p>
+
+                    <label>備考: </label>
+                    <textarea value={note} onChange={(e) => setNote(e.target.value)} />
+
+                    <button onClick={handleOrderSubmit} disabled={cart.length === 0}>
+                        注文を確定
+                    </button>
                 </div>
             )}
         </div>

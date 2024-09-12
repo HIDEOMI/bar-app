@@ -46,7 +46,7 @@ const OrderPage: React.FC<{ products: Product[] }> = ({ products }) => {
     }));
     
     try {
-      const orderId = await createOrder(user.uid, orderItems, totalPrice);
+      const orderId = await createOrder(user.uid, orderItems, totalPrice, note);
       console.log("注文完了! 注文ID:", orderId);
     } catch (error) {
       console.error("注文エラー:", error);
