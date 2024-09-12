@@ -5,8 +5,8 @@ import './App.css';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
 
-import Login from "./pages/LoginPage";
-import MainMenu from "./pages/MainMenuPage";
+import LoginPage from "./pages/LoginPage";
+import MainMenuPage from "./pages/MainMenuPage";
 
 
 
@@ -15,8 +15,8 @@ const App: React.FC = () => {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<RequireAuth><MainMenu /></RequireAuth>} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<RequireAuth><MainMenuPage /></RequireAuth>} />
+          <Route path="/login" element={<LoginPage />} />
         </Routes>
       </Router>
     </AuthProvider>
@@ -28,7 +28,7 @@ const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
 
   if (!user) {
-    return <Login />;
+    return <LoginPage />;
   }
 
   return <>{children}</>;
