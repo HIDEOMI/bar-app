@@ -1,5 +1,4 @@
 import { getFirestore, collection, addDoc, Timestamp, query, where, getDocs } from "firebase/firestore";
-
 import app from './firebase';
 
 const db = getFirestore(app);
@@ -30,23 +29,34 @@ export const getOrdersByUserId = async (userId: string) => {
     return querySnapshot.docs.map(doc => {
         const data = doc.data();
         return {
-          id: doc.id,
-          totalPrice: data.totalPrice,
-          products: data.products || [],
-          note: data.note || "",
-          status: data.status || "未処理",
-          createdAt: data.createdAt
+            id: doc.id,
+            totalPrice: data.totalPrice,
+            products: data.products || [],
+            note: data.note || "",
+            status: data.status || "未処理",
+            createdAt: data.createdAt
         };
     });
 };
 
 /** 未払いの注文を取得する関数 */
 export const getUnpaidOrdersByUserId = async (userId: string) => {
-    const q = query(collection(db, "orders"), where("userId", "==", userId), where("status", "==", "未払い"));
+    const q = query(
+        collection(db, "orders"),
+        where("userId", "==", userId),
+        where("status", "==", "未払い")
+    );
     const querySnapshot = await getDocs(q);
-    
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-  };
+
+    return querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            totalPrice: data.totalPrice,
+            products: data.products || [],
+            note: data.note || "",
+            status: data.status || "未払い",
+            createdAt: data.createdAt
+        };
+    });
+};

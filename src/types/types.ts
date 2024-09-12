@@ -23,5 +23,6 @@ export type Order = {
     }[];
     note: string;
     status: string;
-    createdAt: any;  // Timestamp型
+    createdAt: any; // Timestamp型
   };
+  

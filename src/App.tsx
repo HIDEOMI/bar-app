@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "./components/AuthProvider";
 import LoginPage from "./pages/Login";
 import MainMenuPage from "./pages/MainMenu";
 import OrderHistoryPage from "./pages/OrderHistory";
+import PaymentPage from "./pages/Payment";
 
 
 
@@ -20,6 +21,7 @@ const App: React.FC = () => {
           <Route path="/" element={<MainMenuPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/order_history" element={<OrderHistoryPage />} />  {/* 注文履歴のルートを追加 */}
+          <Route path="/payment" element={<PaymentPage />} />  {/* 支払いページのルート */}
         </Routes>
       </Router>
     </AuthProvider>

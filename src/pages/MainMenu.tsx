@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getProductsByCategory } from "../services/products";
 import { createOrder } from "../services/orders";
 import { Product, CartItem } from "../types/types";
@@ -145,9 +146,12 @@ const MainMenuPage: React.FC = () => {
                     <button onClick={handleOrderSubmit} disabled={cart.length === 0 || isSubmitting}>
                         {isSubmitting ? "注文を送信中..." : "注文を確定"}
                     </button>
-
+                    <Link to="/payment">
+                        <button>支払いページへ</button>
+                    </Link>
                     {/* 注文成功メッセージ - 2秒後に自動的に消える */}
                     {orderSuccess && <p>注文が完了しました！</p>}
+                    {/* 支払いページへのリンク */}
                 </div>
             )}
         </div>
