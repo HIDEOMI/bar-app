@@ -12,7 +12,9 @@ const MainMenu: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [cart, setCart] = useState<CartItem[]>([]);
     const [totalPrice, setTotalPrice] = useState(0);
-    const [note, setNote] = useState("");
+    const [note, setNote] = useState("");  // 備考欄
+    const [isSubmitting, setIsSubmitting] = useState(false);  // 注文送信中の状態
+    const [orderSuccess, setOrderSuccess] = useState(false);  // 注文成功のフラグ
 
 
     useEffect(() => {
@@ -56,6 +58,9 @@ const MainMenu: React.FC = () => {
             return;
         }
 
+        setIsSubmitting(true);  // 注文送信中にする
+        setOrderSuccess(false);  // メッセージをリセット
+
         const orderItems = cart.map(item => ({
             productId: item.product.id,
             name: item.product.name,
@@ -66,12 +71,21 @@ const MainMenu: React.FC = () => {
         try {
             const orderId = await createOrder(user.uid, orderItems, totalPrice, note);
             console.log("注文が確定しました！注文ID:", orderId);
+            setOrderSuccess(true);  // 注文成功
+
+            // 2秒後にメッセージを非表示にする
+            setTimeout(() => {
+                setOrderSuccess(false);
+            }, 2000);
+
             // 注文が確定した後、カートをリセット
             setCart([]);
             setTotalPrice(0);
             setNote("");
         } catch (error) {
             console.error("注文確定時にエラーが発生しました:", error);
+        } finally {
+            setIsSubmitting(false);  // 送信終了
         }
     };
 
@@ -127,9 +141,13 @@ const MainMenu: React.FC = () => {
                     <label>備考: </label>
                     <textarea value={note} onChange={(e) => setNote(e.target.value)} />
 
-                    <button onClick={handleOrderSubmit} disabled={cart.length === 0}>
-                        注文を確定
+                    {/* 注文確定ボタン */}
+                    <button onClick={handleOrderSubmit} disabled={cart.length === 0 || isSubmitting}>
+                        {isSubmitting ? "注文を送信中..." : "注文を確定"}
                     </button>
+
+                    {/* 注文成功メッセージ - 2秒後に自動的に消える */}
+                    {orderSuccess && <p>注文が完了しました！</p>}
                 </div>
             )}
         </div>
