@@ -7,16 +7,19 @@ const db = getFirestore(app);
 export const getProductsByCategory = async (category: string) => {
     let q;
     if (category === "all") {
-      q = collection(db, "products");
+        q = collection(db, "products");
     } else {
-      q = query(collection(db, "products"), where("category", "==", category));
+        q = query(collection(db, "products"), where("category", "==", category));
     }
-    
+
     const querySnapshot = await getDocs(q);
-    
+
     return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
+        id: doc.id,
+        name: doc.data().name,
+        price: doc.data().price,
+        description: doc.data().description,
+        imageUrl: doc.data().imageUrl,
+        stock: doc.data().stock
     }));
-  };
-  
+};

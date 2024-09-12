@@ -23,6 +23,7 @@ const OrderPage: React.FC<{ products: Product[] }> = ({ products }) => {
   const [note, setNote] = useState(""); // 備考欄
 
   const handleAddToCart = (product: Product) => {
+    console.log("カートに追加されました:", product);
     const existingItem = cart.find(item => item.product.id === product.id);
     if (existingItem) {
       setCart(cart.map(item => item.product.id === product.id 
