@@ -5,8 +5,8 @@ import './App.css';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
 
-import Login from "./pages/Login";
-import MainMenu from "./pages/MainMenu";
+import Login from "./pages/LoginPage";
+import MainMenu from "./pages/MainMenuPage";
 
 
 
