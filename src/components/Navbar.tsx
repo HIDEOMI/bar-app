@@ -11,12 +11,6 @@ const Navbar: React.FC = () => {
                 <li style={{ marginRight: '20px' }}>
                     <Link to="/admin/orders">注文確認</Link>
                 </li>
-                <li style={{ marginRight: '20px' }}>
-                    <Link to="/admin/products">商品管理</Link>
-                </li>
-                <li style={{ marginRight: '20px' }}>
-                    <Link to="/admin/materials">材料管理</Link>
-                </li>
                 <li>
                     <Link to="/admin">管理者ダッシュボード</Link>
                 </li>

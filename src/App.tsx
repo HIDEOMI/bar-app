@@ -1,21 +1,22 @@
 import React from 'react';
-// import logo from './logo.svg';
-import './App.css';
-
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+
+// import logo from './logo.svg';
+// import './App.css';
+
 import { AuthProvider, useAuth } from "./components/AuthProvider";
 import Layout from './components/Layout';
-
-import MainMenu from './pages/MainMenu';
 import Login from "./pages/Login";
+import MainMenu from './pages/MainMenu';
 import OrderHistory from "./pages/OrderHistory";
 import Payment from "./pages/Payment";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import Products from './pages/admin/Products';
-import Materials from './pages/admin/Materials';
-import Orders from './pages/admin/Orders';
+import AdminDashboard from './pages/admin/AdminDashboard';
+// import Products from './pages/admin/Products';
+// import Materials from './pages/admin/Materials';
+// import Orders from './pages/admin/Orders';
 
-/** 認証が必 要なコンポーネントをラップする */
+
+/** 認証が必要なコンポーネントをラップする */
 const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user } = useAuth();
     if (!user) {
@@ -46,9 +47,6 @@ const App: React.FC = () => {
                         <Route path="/payment" element={<Payment />} />  {/* 支払いページのルート */}
                         {/* 管理者専用ルート */}
                         <Route path="/admin/*" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
-                        <Route path="/admin/products" element={<Products />} />
-                        <Route path="/admin/materials" element={<Materials />} />
-                        <Route path="/admin/orders" element={<Orders />} />
                     </Routes>
                 </Layout>
             </Router>

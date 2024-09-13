@@ -5,6 +5,7 @@
 /.pnp
 .pnp.js
 .env
+/.firebase
 
 # testing
 /coverage
@@ -25,5 +26,3 @@ yarn-debug.log*
 yarn-error.log*# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 /.firebase
-
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
