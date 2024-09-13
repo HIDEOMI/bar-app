@@ -34,3 +34,8 @@ export type Material = {
     quantity: number;
     unit: string;
 };
+
+export type CachedUser = {
+    displayName: string;
+    timestamp: number;
+};

@@ -1,15 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { getAllOrders, updateOrderStatus } from '../../services/orders';
 import { getUserById } from '../../services/users';
-import { Order } from "../../types/types";
+import { Order, CachedUser } from "../../types/types";
 
+
+const CACHE_EXPIRATION_TIME = 10 * 60 * 1000;  // キャッシュの有効期限を10分（600000ミリ秒）に設定
+const MAX_CACHE_SIZE = 100;  // キャッシュの最大サイズを100エントリに制限
+
+/** ローカルストレージからキャッシュを取得する関数 */
+const loadCacheFromLocalStorage = (): { [key: string]: CachedUser } => {
+    const cache = localStorage.getItem('userCache');
+    return cache ? JSON.parse(cache) : {};
+};
+/** ローカルストレージにキャッシュを保存する関数 */
+const saveCacheToLocalStorage = (cache: { [key: string]: CachedUser }) => {
+    localStorage.setItem('userCache', JSON.stringify(cache));
+};
+/** キャッシュのサイズを制限する関数 */
+const enforceCacheSizeLimit = (cache: { [key: string]: CachedUser }): { [key: string]: CachedUser } => {
+    const keys = Object.keys(cache);
+    if (keys.length > MAX_CACHE_SIZE) {
+        // 古いキャッシュデータを削除
+        const sortedKeys = keys.sort((a, b) => cache[a].timestamp - cache[b].timestamp);
+        const keysToRemove = sortedKeys.slice(0, keys.length - MAX_CACHE_SIZE);
+        for (const key of keysToRemove) {
+            delete cache[key];
+        }
+    }
+    return cache;
+};
 
 const Orders: React.FC = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(false);
     const [userNames, setUserNames] = useState<{ [key: string]: string }>({}); // userId に対する displayName
     const [selectedStatus, setSelectedStatus] = useState<string>("全て");  // デフォルトは全て
-    const userCache: { [key: string]: string } = {}; // ユーザー情報をキャッシュするオブジェクト
+    const [userCache, setUserCache] = useState<{ [key: string]: CachedUser }>(loadCacheFromLocalStorage()); // ローカルストレージからキャッシュを読み込む
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -17,17 +43,36 @@ const Orders: React.FC = () => {
             const data = await getAllOrders();
             setOrders(data);
             setLoading(false);
+
+            const currentTime = Date.now();
             // 各注文のユーザー情報を取得
             const userNameMap: { [key: string]: string } = {};
+
             for (const order of data) {
                 if (userCache[order.userId]) {
-                    // キャッシュに存在する場合はキャッシュを使用
-                    userNameMap[order.userId] = userCache[order.userId];
+                    const cachedUser = userCache[order.userId];
+
+                    // キャッシュの有効期限が切れていない場合はキャッシュを使用
+                    if (currentTime - cachedUser.timestamp < CACHE_EXPIRATION_TIME) {
+                        userNameMap[order.userId] = cachedUser.displayName;
+                    } else {
+                        // 有効期限が切れている場合は再度Firestoreから取得
+                        const user = await getUserById(order.userId);
+                        if (user) {
+                            const displayName = user.displayName || "不明なユーザー";
+                            const newCache = { ...userCache, [order.userId]: { displayName, timestamp: currentTime } };
+                            setUserCache(enforceCacheSizeLimit(newCache)); // キャッシュを更新し、サイズを制限
+                            userNameMap[order.userId] = displayName;
+                        }
+                    }
                 } else {
+                    // キャッシュに存在しない場合はFirestoreから取得
                     const user = await getUserById(order.userId);
                     if (user) {
-                        userCache[order.userId] = user.displayName || "不明なユーザー"; // キャッシュに保存
-                        userNameMap[order.userId] = user.displayName || "不明なユーザー";
+                        const displayName = user.displayName || "不明なユーザー";
+                        const newCache = { ...userCache, [order.userId]: { displayName, timestamp: currentTime } };
+                        setUserCache(enforceCacheSizeLimit(newCache)); // 新しくキャッシュに保存し、サイズを制限
+                        userNameMap[order.userId] = displayName;
                     } else {
                         userNameMap[order.userId] = "不明なユーザー";
                     }
@@ -38,14 +83,18 @@ const Orders: React.FC = () => {
         };
 
         fetchOrders();
-    }, []);
+    }, [userCache]);
+
+    // キャッシュが更新されたらローカルストレージに保存
+    useEffect(() => {
+        saveCacheToLocalStorage(userCache);
+    }, [userCache]);
 
     const handleStatusChange = async (orderId: string, newStatus: string) => {
         try {
             await updateOrderStatus(orderId, newStatus);
-            // ステータス更新後に注文データを再取得
             const data = await getAllOrders();
-            setOrders(data);
+            setOrders(data);  // ステータス更新後に注文データを再取得
         } catch (error) {
             console.error("注文の状態を更新できませんでした: ", error);
         }
