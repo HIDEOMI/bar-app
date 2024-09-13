@@ -4,13 +4,15 @@ import { getProductsByCategory } from "../services/products";
 import { createOrder } from "../services/orders";
 import { Product, CartItem } from "../types/types";
 import { useAuth } from "../components/AuthProvider";
+import { getMaterials, updateMaterial } from "../services/materials";
 
 
 const MainMenu: React.FC = () => {
     const { user } = useAuth();
-    const [products, setProducts] = useState<Product[]>([]);
-    const [category, setCategory] = useState("all");
     const [loading, setLoading] = useState(false);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [materials, setMaterials] = useState<any[]>([]);
+    const [category, setCategory] = useState("all");
     const [cart, setCart] = useState<CartItem[]>([]);
     const [totalPrice, setTotalPrice] = useState(0);
     const [note, setNote] = useState("");  // 備考欄
@@ -22,9 +24,20 @@ const MainMenu: React.FC = () => {
         const fetchProducts = async () => {
             setLoading(true);
             try {
-                const products = await getProductsByCategory(category);
+                const productsData = await getProductsByCategory(category);
                 console.log("取得した商品:", products);
-                setProducts(products);
+                const mappedProducts: Product[] = productsData.map((product: any) => ({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    description: product.description,
+                    imageUrl: product.imageUrl,
+                    stock: product.stock,
+                    materials: product.materials || []  // materialsがない場合は空配列
+                }));
+                const materialsData = await getMaterials();
+                setProducts(mappedProducts);
+                setMaterials(materialsData);
             } catch (error) {
                 console.error("Error fetching products: ", error);
             } finally {
@@ -33,7 +46,15 @@ const MainMenu: React.FC = () => {
         };
 
         fetchProducts();
+        // fetchData();
     }, [category]);
+
+    const isProductAvailable = (product: Product) => {
+        return product.materials.every((materialId) => {
+            const material = materials.find((m) => m.id === materialId);
+            return material && material.quantity > 0;
+        });
+    };
 
     /** 商品をカートに追加する関数 */
     const handleAddToCart = (product: Product) => {
@@ -73,6 +94,17 @@ const MainMenu: React.FC = () => {
             const orderId = await createOrder(user.uid, orderItems, totalPrice, note);
             console.log("注文が確定しました！注文ID:", orderId);
             setOrderSuccess(true);  // 注文成功
+
+            // 使用した材料の在庫を減らす
+            for (const item of cart) {
+                const product = item.product;
+                for (const materialId of product.materials) {
+                    const material = materials.find((m) => m.id === materialId);
+                    if (material) {
+                        await updateMaterial(materialId, { quantity: material.quantity - item.quantity });
+                    }
+                }
+            }
 
             // 2秒後にメッセージを非表示にする
             setTimeout(() => {
@@ -117,9 +149,8 @@ const MainMenu: React.FC = () => {
                                     <h3>{product.name}</h3>
                                     <p>{product.description}</p>
                                     <p>価格: ¥{product.price}</p>
-                                    <p>在庫: {product.stock > 0 ? product.stock : "売り切れ"}</p>
-                                    {/* 在庫があればカートに追加ボタンを表示 */}
-                                    {product.stock > 0 && (
+                                    <p>在庫: {isProductAvailable(product) ? "在庫あり" : "売り切れ"}</p>
+                                    {isProductAvailable(product) && (
                                         <button onClick={() => handleAddToCart(product)}>
                                             カートに追加
                                         </button>

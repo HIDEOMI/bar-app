@@ -25,6 +25,7 @@ export type Order = {
     note: string;
     status: string;
     createdAt: any; // Timestamp型
+    userId: string;
 };
 
 export type Material = {

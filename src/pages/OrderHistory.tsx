@@ -23,7 +23,8 @@ const OrderHistory: React.FC = () => {
                         products: order.products || [],
                         note: order.note || "",
                         status: order.status || "未処理",
-                        createdAt: order.createdAt
+                        createdAt: order.createdAt,
+                        userId: order.userId,
                     }));
 
                     setOrders(mappedOrders);

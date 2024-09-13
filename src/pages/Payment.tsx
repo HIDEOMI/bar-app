@@ -18,19 +18,19 @@ const Payment: React.FC = () => {
                 setLoading(true);
                 try {
                     const orders = await getUnpaidOrdersByUserId(user.uid);
-
                     const mappedOrders: Order[] = orders.map(order => ({
                         id: order.id,
                         totalPrice: order.totalPrice,
                         products: order.products || [],
                         note: order.note || "",
                         status: order.status || "未払い",
-                        createdAt: order.createdAt
+                        createdAt: order.createdAt,
+                        userId: order.userId
                     }));
 
-                    setUnpaidOrders(orders);
+                    setUnpaidOrders(mappedOrders);
 
-                    const total = orders.reduce((sum, order) => sum + order.totalPrice, 0);
+                    const total = mappedOrders.reduce((sum, order) => sum + order.totalPrice, 0);
                     setTotalUnpaid(total);
                 } catch (error) {
                     console.error("Error fetching unpaid orders:", error);

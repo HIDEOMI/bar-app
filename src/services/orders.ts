@@ -1,4 +1,4 @@
-import { getFirestore, collection, addDoc, Timestamp, query, where, getDocs } from "firebase/firestore";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, Timestamp, query, where } from "firebase/firestore";
 import app from './firebase';
 
 const db = getFirestore(app);
@@ -21,6 +21,25 @@ export const createOrder = async (userId: string, products: any[], totalPrice: n
     }
 };
 
+
+/** すべての注文を取得する関数 */
+export const getAllOrders = async () => {
+    const querySnapshot = await getDocs(collection(db, "orders"));
+    return querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            totalPrice: data.totalPrice,
+            products: data.products || [],
+            note: data.note || "",
+            status: data.status || "未処理",
+            createdAt: data.createdAt,
+            userId: data.userId,
+        };
+    });
+};
+
+
 /** ユーザーの注文履歴を取得する関数 */
 export const getOrdersByUserId = async (userId: string) => {
     const q = query(collection(db, "orders"), where("userId", "==", userId));
@@ -34,7 +53,8 @@ export const getOrdersByUserId = async (userId: string) => {
             products: data.products || [],
             note: data.note || "",
             status: data.status || "未処理",
-            createdAt: data.createdAt
+            createdAt: data.createdAt,
+            userId: data.userId,
         };
     });
 };
@@ -56,7 +76,14 @@ export const getUnpaidOrdersByUserId = async (userId: string) => {
             products: data.products || [],
             note: data.note || "",
             status: data.status || "未払い",
-            createdAt: data.createdAt
+            createdAt: data.createdAt,
+            userId: data.userId,
         };
     });
+};
+
+/** 注文の状態を更新する関数 */
+export const updateOrderStatus = async (orderId: string, status: string) => {
+    const orderRef = doc(db, "orders", orderId);
+    await updateDoc(orderRef, { status });
 };

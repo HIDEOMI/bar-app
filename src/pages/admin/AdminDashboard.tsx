@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import Materials from './Materials';
 import Products from './Products';
+import Orders from './Orders';
 
 const AdminDashboard: React.FC = () => {
   return (
@@ -17,7 +18,8 @@ const AdminDashboard: React.FC = () => {
           </ul>
         } />
         <Route path="materials" element={<Materials />} />
-        {/* 他の管理者ページのルートも追加 */}
+        <Route path="products" element={<Products />} />
+        <Route path="orders" element={<Orders />} />
       </Routes>
     </div>
   );
