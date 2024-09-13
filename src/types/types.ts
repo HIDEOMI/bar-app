@@ -25,3 +25,10 @@ export type Order = {
     status: string;
     createdAt: any; // Timestamp型
 };
+
+export type Material = {
+    id: string;
+    name: string;
+    quantity: number;
+    unit: string;
+};

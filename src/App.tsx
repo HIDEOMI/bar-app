@@ -9,10 +9,9 @@ import Login from "./pages/Login";
 import MainMenu from "./pages/MainMenu";
 import OrderHistory from "./pages/OrderHistory";
 import Payment from "./pages/Payment";
-import AdminDashboard from "./pages/AdminDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
-
-/** 認証が必要なコンポーネントをラップする */
+/** 認証が必 要なコンポーネントをラップする */
 const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
 
@@ -40,8 +39,8 @@ const App: React.FC = () => {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* <Route path="/" element={<RequireAuth><MainMenuPage /></RequireAuth>} /> */}
-          <Route path="/" element={<MainMenu />} />
+          <Route path="/" element={<RequireAuth><MainMenu /></RequireAuth>} />
+          {/* <Route path="/" element={<MainMenu />} /> */}
           <Route path="/login" element={<Login />} />
           <Route path="/order_history" element={<OrderHistory />} />  {/* 注文履歴のルートを追加 */}
           <Route path="/payment" element={<Payment />} />  {/* 支払いページのルート */}
