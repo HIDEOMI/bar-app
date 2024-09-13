@@ -31,7 +31,7 @@ const RequireAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     const { user, isAdmin } = useAuth();
 
     if (!user || !isAdmin) {
-        return <p>管理者権限が必要です。</p>;
+        return <p>管理者権限が必要です。ページを戻ってください</p>;
     }
 
     return <>{children}</>;
