@@ -1,17 +1,22 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { AuthProvider, useAuth } from "./components/AuthProvider";
 
+// import logo from './logo.svg';
+// import './App.css';
+
+import { AuthProvider, useAuth } from "./components/AuthProvider";
+import Layout from './components/Layout';
 import Login from "./pages/Login";
-import MainMenu from "./pages/MainMenu";
+import MainMenu from './pages/MainMenu';
 import OrderHistory from "./pages/OrderHistory";
 import Payment from "./pages/Payment";
-import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminDashboard from './pages/admin/AdminDashboard';
+// import Products from './pages/admin/Products';
+// import Materials from './pages/admin/Materials';
+// import Orders from './pages/admin/Orders';
 
-/** 認証が必 要なコンポーネントをラップする */
+
+/** 認証が必要なコンポーネントをラップする */
 const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user } = useAuth();
 
@@ -38,15 +43,17 @@ const App: React.FC = () => {
     return (
         <AuthProvider>
             <Router>
-                <Routes>
-                    <Route path="/" element={<RequireAuth><MainMenu /></RequireAuth>} />
-                    {/* <Route path="/" element={<MainMenu />} /> */}
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/order_history" element={<OrderHistory />} />  {/* 注文履歴のルートを追加 */}
-                    <Route path="/payment" element={<Payment />} />  {/* 支払いページのルート */}
-                    {/* 管理者専用ルート */}
-                    <Route path="/admin/*" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
-                </Routes>
+                <Layout>
+                    <Routes>
+                        <Route path="/" element={<RequireAuth><MainMenu /></RequireAuth>} />
+                        {/* <Route path="/" element={<MainMenu />} /> */}
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/order_history" element={<OrderHistory />} />  {/* 注文履歴のルートを追加 */}
+                        <Route path="/payment" element={<Payment />} />  {/* 支払いページのルート */}
+                        {/* 管理者専用ルート */}
+                        <Route path="/admin/*" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
+                    </Routes>
+                </Layout>
             </Router>
         </AuthProvider>
     );
