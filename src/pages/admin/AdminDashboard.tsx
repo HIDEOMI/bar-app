@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
 import Materials from './Materials';
+import Products from './Products';
 
 const AdminDashboard: React.FC = () => {
   return (
