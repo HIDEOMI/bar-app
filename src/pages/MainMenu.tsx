@@ -47,7 +47,7 @@ const MainMenu: React.FC = () => {
 
         fetchProducts();
         // fetchData();
-    }, [category]);
+    }, [category, products]);
 
     const isProductAvailable = (product: Product) => {
         return product.materials.every((materialId) => {
