@@ -1,76 +1,63 @@
-import React, { useState, useEffect } from 'react';
-import { auth } from './firebase/firebaseConfig';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import ReactDOM from 'react-dom';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
-// ページについて
-import './App.css';
-import LoginPage from './pages/LoginPage';
-import MenuPage from './pages/MenuPage';
-import AddProductPage from './pages/AddProductPage';
-import EditProductPage from './pages/EditProductPage';
-import InventoryManagementPage from './pages/InventoryManagementPage';
+// import logo from './logo.svg';
+// import './App.css';
+
+import { AuthProvider, useAuth } from "./components/AuthProvider";
+import Layout from './components/Layout';
+import Login from "./pages/Login";
+import MainMenu from './pages/MainMenu';
+import OrderHistory from "./pages/OrderHistory";
+import Payment from "./pages/Payment";
+import AdminDashboard from './pages/admin/AdminDashboard';
+// import Products from './pages/admin/Products';
+// import Materials from './pages/admin/Materials';
+// import Orders from './pages/admin/Orders';
 
 
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import logo from './logo.svg';
-import { Link } from 'react-router-dom';
+/** 認証が必要なコンポーネントをラップする */
+const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { user } = useAuth();
 
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css'; // toastify のスタイルシート
+    if (!user) {
+        return <Login />;
+    }
+
+    return <>{children}</>;
+};
+
+const RequireAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { user, isAdmin } = useAuth();
+
+    if (!user || !isAdmin) {
+        return <p>管理者権限が必要です。ページを戻ってください</p>;
+    }
+
+    return <>{children}</>;
+};
+
 
 
 const App: React.FC = () => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Firebaseの認証状態を監視
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      console.log('Logged out successfully');
-    } catch (error) {
-      console.error('Logout failed', error);
-    }
-  };
-
-  if (!user) {
-    return <LoginPage />;
-  }
-
-  return (
-    <Router>
-      <h1>Welcome, {user.displayName}</h1>
-      <button onClick={handleLogout}>Logout</button>
-      <nav>
-        <div>
-          <a href="/menu">Menu</a>
-        </div>
-        <div>
-          <a href="/add_product">Add Product</a>
-        </div>
-        <div>
-          <a href="/inventory">Inventory Management</a>
-        </div>
-      </nav>
-      <Routes>
-        <Route path="/menu" element={<MenuPage />} />
-        <Route path="/add_product" element={<AddProductPage />} />
-        <Route path="/inventory" element={<InventoryManagementPage />} />
-        <Route path="/edit_product/:id" element={<EditProductPage />} />
-      </Routes>
-    </Router>
-  );
+    return (
+        <AuthProvider>
+            <Router>
+                <Layout>
+                    <Routes>
+                        <Route path="/" element={<RequireAuth><MainMenu /></RequireAuth>} />
+                        {/* <Route path="/" element={<MainMenu />} /> */}
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/order_history" element={<OrderHistory />} />  {/* 注文履歴のルートを追加 */}
+                        <Route path="/payment" element={<Payment />} />  {/* 支払いページのルート */}
+                        {/* 管理者専用ルート */}
+                        <Route path="/admin/*" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
+                    </Routes>
+                </Layout>
+            </Router>
+        </AuthProvider>
+    );
 };
+
 
 export default App;
