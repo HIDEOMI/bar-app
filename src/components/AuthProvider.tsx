@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChange } from "../services/auth";
+import { getUserInfo } from '../services/users';
+
 
 type AuthContextType = {
     user: any | null;
     loading: boolean;
+    isAdmin: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -11,17 +14,25 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChange((user) => {
-            setUser(user);
+        const unsubscribe = onAuthStateChange(async (user) => {
+            if (user) {
+                const userInfo = await getUserInfo(user.uid);
+                setUser({ ...user, ...userInfo });
+                setIsAdmin(userInfo?.isAdmin || false);
+            } else {
+                setUser(null);
+                setIsAdmin(false);
+            }
             setLoading(false);
         });
         return () => unsubscribe();
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, loading }}>
+        <AuthContext.Provider value={{ user, loading, isAdmin }}>
             {!loading && children}
         </AuthContext.Provider>
     );
