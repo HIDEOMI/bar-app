@@ -3,12 +3,13 @@ import app from './firebase';
 
 const db = getFirestore(app);
 
-export const getUserInfo = async (uid: string) => {
-    const userRef = doc(db, "users", uid);
-    const docSnap = await getDoc(userRef);
-    if (docSnap.exists()) {
-        return docSnap.data();
+/** ユーザーIDに基づいてユーザー情報を取得する関数 */
+export const getUserById = async (userId: string) => {
+    const userRef = doc(db, "users", userId);
+    const userDoc = await getDoc(userRef);
+    if (userDoc.exists()) {
+        return userDoc.data(); // ユーザーデータを返す
     } else {
-        return null;
+        return null; // ユーザーが存在しない場合
     }
 };

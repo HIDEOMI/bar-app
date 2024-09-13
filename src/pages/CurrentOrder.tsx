@@ -1,20 +1,8 @@
 import React, { useState } from "react";
 import { useAuth } from "../components/AuthProvider";
 import { createOrder } from "../services/orders";
+import { Product, CartItem } from "../types/types";
 
-type Product = {
-    id: string;
-    name: string;
-    price: number;
-    description: string;
-    imageUrl: string;
-    stock: number;
-};
-
-type CartItem = {
-    product: Product;
-    quantity: number;
-};
 
 const Order: React.FC<{ products: Product[] }> = ({ products }) => {
     const { user } = useAuth();
@@ -63,10 +51,10 @@ const Order: React.FC<{ products: Product[] }> = ({ products }) => {
                         <h3>{product.name}</h3>
                         <p>{product.description}</p>
                         <p>価格: ¥{product.price}</p>
-                        <p>在庫: {product.stock > 0 ? product.stock : "売り切れ"}</p>
-                        <button onClick={() => handleAddToCart(product)} disabled={product.stock <= 0}>
-                            カートに追加
-                        </button>
+                        {/* <p>在庫: {product.stock > 0 ? product.stock : "売り切れ"}</p> */}
+                        {/* <button onClick={() => handleAddToCart(product)} disabled={product.stock <= 0}> */}
+                            {/* カートに追加 */}
+                        {/* </button> */}
                     </li>
                 ))}
             </ul>

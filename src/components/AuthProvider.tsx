@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChange } from "../services/auth";
-import { getUserInfo } from '../services/users';
+import { getUserById } from '../services/users';
 
 
 type AuthContextType = {
@@ -19,7 +19,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         const unsubscribe = onAuthStateChange(async (user) => {
             if (user) {
-                const userInfo = await getUserInfo(user.uid);
+                const userInfo = await getUserById(user.uid);
                 setUser({ ...user, ...userInfo });
                 setIsAdmin(userInfo?.isAdmin || false);
             } else {

@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { getAllOrders, updateOrderStatus } from '../../services/orders';
+import { getUserById } from '../../services/users';
 import { Order } from "../../types/types";
 
 
 const Orders: React.FC = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(false);
+    const [userNames, setUserNames] = useState<{ [key: string]: string }>({}); // userId に対する displayName
     const [selectedStatus, setSelectedStatus] = useState<string>("全て");  // デフォルトは全て
+    const userCache: { [key: string]: string } = {}; // ユーザー情報をキャッシュするオブジェクト
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -14,7 +17,26 @@ const Orders: React.FC = () => {
             const data = await getAllOrders();
             setOrders(data);
             setLoading(false);
+            // 各注文のユーザー情報を取得
+            const userNameMap: { [key: string]: string } = {};
+            for (const order of data) {
+                if (userCache[order.userId]) {
+                    // キャッシュに存在する場合はキャッシュを使用
+                    userNameMap[order.userId] = userCache[order.userId];
+                } else {
+                    const user = await getUserById(order.userId);
+                    if (user) {
+                        userCache[order.userId] = user.displayName || "不明なユーザー"; // キャッシュに保存
+                        userNameMap[order.userId] = user.displayName || "不明なユーザー";
+                    } else {
+                        userNameMap[order.userId] = "不明なユーザー";
+                    }
+                }
+            }
+            setUserNames(userNameMap);
+            setLoading(false);
         };
+
         fetchOrders();
     }, []);
 
@@ -55,7 +77,7 @@ const Orders: React.FC = () => {
                     {filteredOrders.map(order => (
                         <li key={order.id}>
                             <h3>注文ID: {order.id}</h3>
-                            <p>ユーザーID: {order.userId}</p>
+                            <p>ユーザー: {userNames[order.userId] || "不明なユーザー"}</p> {/* displayNameを表示 */}
                             <p>合計金額: ¥{order.totalPrice}</p>
                             <p>備考: {order.note}</p>
                             <p>注文日時: {order.createdAt.toDate().toLocaleString()}</p>
