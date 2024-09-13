@@ -6,6 +6,7 @@ import { Order } from "../../types/types";
 const Orders: React.FC = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(false);
+    const [selectedStatus, setSelectedStatus] = useState<string>("全て");  // デフォルトは全て
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -28,14 +29,30 @@ const Orders: React.FC = () => {
         }
     };
 
+    /** フィルタリングされた注文を取得 */
+    const filteredOrders = selectedStatus === "全て"
+        ? orders
+        : orders.filter(order => order.status === selectedStatus);
+
     return (
         <div>
             <h1>注文確認</h1>
+            {/* 状態フィルタのドロップダウン */}
+            <label>注文状態フィルタ: </label>
+            <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
+                <option value="全て">全て</option>
+                <option value="未処理">未処理</option>
+                <option value="処理中">処理中</option>
+                <option value="未払い">未払い</option>
+                <option value="完了">完了</option>
+            </select>
+
             {loading ? (
                 <p>読み込み中...</p>
             ) : (
                 <ul>
-                    {orders.map(order => (
+                    {/* フィルタされた注文を表示 */}
+                    {filteredOrders.map(order => (
                         <li key={order.id}>
                             <h3>注文ID: {order.id}</h3>
                             <p>ユーザーID: {order.userId}</p>
