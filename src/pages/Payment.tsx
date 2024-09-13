@@ -4,7 +4,7 @@ import { useAuth } from "../components/AuthProvider";
 import { getFirestore, writeBatch, doc } from "firebase/firestore";
 import { Order } from "../types/types";
 
-const PaymentPage: React.FC = () => {
+const Payment: React.FC = () => {
     const { user } = useAuth();
     const [unpaidOrders, setUnpaidOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(false);
@@ -101,4 +101,4 @@ const PaymentPage: React.FC = () => {
     );
 };
 
-export default PaymentPage;
+export default Payment;

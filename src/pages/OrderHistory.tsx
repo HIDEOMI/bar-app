@@ -4,7 +4,7 @@ import { useAuth } from "../components/AuthProvider";  // ユーザー情報を�
 import { Order } from "../types/types";
 
 
-const OrderHistoryPage: React.FC = () => {
+const OrderHistory: React.FC = () => {
     const { user } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(false);
@@ -69,4 +69,4 @@ const OrderHistoryPage: React.FC = () => {
     );
 };
 
-export default OrderHistoryPage;
+export default OrderHistory;

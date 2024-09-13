@@ -16,7 +16,7 @@ type CartItem = {
     quantity: number;
 };
 
-const OrderPage: React.FC<{ products: Product[] }> = ({ products }) => {
+const Order: React.FC<{ products: Product[] }> = ({ products }) => {
     const { user } = useAuth();
     const [cart, setCart] = useState<CartItem[]>([]);
     const [totalPrice, setTotalPrice] = useState(0);
@@ -91,4 +91,4 @@ const OrderPage: React.FC<{ products: Product[] }> = ({ products }) => {
     );
 };
 
-export default OrderPage;
+export default Order;

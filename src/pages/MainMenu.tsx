@@ -6,7 +6,7 @@ import { Product, CartItem } from "../types/types";
 import { useAuth } from "../components/AuthProvider";
 
 
-const MainMenuPage: React.FC = () => {
+const MainMenu: React.FC = () => {
     const { user } = useAuth();
     const [products, setProducts] = useState<Product[]>([]);
     const [category, setCategory] = useState("all");
@@ -158,4 +158,4 @@ const MainMenuPage: React.FC = () => {
     );
 };
 
-export default MainMenuPage;
+export default MainMenu;

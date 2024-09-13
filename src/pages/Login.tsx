@@ -1,7 +1,7 @@
 import React from "react";
 import { signInWithGoogle } from "../services/auth";
 
-const LoginPage: React.FC = () => {
+const Login: React.FC = () => {
     const handleSignIn = async () => {
         try {
             await signInWithGoogle();
@@ -18,4 +18,4 @@ const LoginPage: React.FC = () => {
     );
 };
 
-export default LoginPage;
+export default Login;
