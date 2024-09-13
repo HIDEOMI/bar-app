@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getProducts, addProduct, updateProduct, deleteProduct } from '../../services/products';
+import { getProducts, addProduct, deleteProduct } from '../../services/products';
+// import { getProducts, addProduct, updateProduct, deleteProduct } from '../../services/products';
 import { getMaterials } from '../../services/materials';
 import { Product, Material } from '../../types/types';
 
