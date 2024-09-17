@@ -161,6 +161,8 @@ bar-app/
 
 
 ## 3.iii 実装
+- 進捗や要望の管理などは[Trello](https://trello.com/b/Mfv7aSjt/bar-app%E9%96%8B%E7%99%BA
+)でやってます
 <details><summary>展開/格納</summary>
   
 - [ver.240917](https://github.com/HIDEOMI/bar-app/tree/ver_240917): プロトタイプリリース
