@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getProducts, addProduct, deleteProduct } from '../../services/products';
-// import { getProducts, addProduct, updateProduct, deleteProduct } from '../../services/products';
+import { getAllProducts, addProduct, deleteProduct } from '../../services/products';
+// import { getAllProducts, addProduct, updateProduct, deleteProduct } from '../../services/products';
 import { getMaterials } from '../../services/materials';
 import { Product, Material } from '../../types/types';
 
@@ -19,7 +19,7 @@ const Products: React.FC = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const productsData = await getProducts();
+            const productsData = await getAllProducts();
             const materialsData = await getMaterials();
 
             const mappedProducts: Product[] = productsData.map((doc: any) => ({
@@ -47,7 +47,7 @@ const Products: React.FC = () => {
             imageUrl: '',
             materials: [],
         });
-        const productsData = await getProducts();
+        const productsData = await getAllProducts();
         const mappedProducts: Product[] = productsData.map((doc: any) => ({
             id: doc.id,
             name: doc.name,
@@ -62,7 +62,7 @@ const Products: React.FC = () => {
 
     const handleDeleteProduct = async (id: string) => {
         await deleteProduct(id);
-        const productsData = await getProducts();
+        const productsData = await getAllProducts();
         const mappedProducts: Product[] = productsData.map((doc: any) => ({
             id: doc.id,
             name: doc.name,
