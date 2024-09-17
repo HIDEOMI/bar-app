@@ -3,7 +3,7 @@
 
 name: Deploy to Firebase Hosting on PR
 on:
-  pull_requet:
+  pull_request:
     paths:
       # srcディレクトリ配下のファイルが更新された時
       - 'src/**'
