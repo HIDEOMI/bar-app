@@ -6,6 +6,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      # srcディレクトリ配下のファイルが更新された時
+      - 'src/**'
+      # package.jsonが更新された時
+      - 'package.json'
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
