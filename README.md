@@ -2,6 +2,8 @@
 ChatGPTと作るモバイルオーダーアプリ
 
 # dir構成について
+
+'''
 bar-app/
 │
 ├── src/
@@ -13,3 +15,4 @@ bar-app/
 │   └── utils/       # ユーティリティ関数
 ├── public/          # 公開ファイル
 └── firebase.json    # Firebaseの設定ファイル
+'''
