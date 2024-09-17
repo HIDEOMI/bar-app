@@ -25,8 +25,8 @@ export const getProductsByCategory = async (category: string) => {
 };
 
 export const getAllProducts = async () => {
-    const querySnapshot = await getDocs(collection(db, 'products'));
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const allProducts = getProductsByCategory("all");
+    return allProducts;
 };
 
 export const addProduct = async (product: any) => {
