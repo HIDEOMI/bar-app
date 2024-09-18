@@ -15,11 +15,7 @@ export const getProductsByCategory = async (category: string) => {
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({
         id: doc.id,
-        name: doc.data().name,
-        price: doc.data().price,
-        description: doc.data().description,
-        imageUrl: doc.data().imageUrl,
-        isAvailable: doc.data().isAvailable,
+        ...doc.data(),
     }) as Product);
 };
 

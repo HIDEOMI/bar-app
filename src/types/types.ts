@@ -4,6 +4,11 @@ export type Product = {
     name: string;
     price: number;
     description: string;
+    categories: string[];
+    base: string[];  // ベースになっているお酒
+    color: string;
+    alc: number;  // アルコール度数
+    recipe: string;  // カクテルの作り方
     imageUrl: string;
     isAvailable: boolean;  // 商品の在庫があるかどうか
     materials: MaterialInProduct[];
@@ -15,6 +20,18 @@ export type MaterialInProduct = {
     name: string;
     quantity: number;  // 商品における必要な材料の量
     isAvailable: boolean;  // 材料の在庫があるかどうか
+};
+
+/** 材料ドキュメント */
+export type Material = {
+    id: string;
+    name: string;
+    category: string;
+    totalAmount: number;  // 単位に対する総量（例: 2本, 3個 など）
+    unit: string;
+    unitCapacity: number;  // 単位当たりの容量（例: 1本あたり"500"ml など）
+    unitPrice: number;  // 単価（例: 1本あたり"2000"円 など）
+    note: string;
 };
 
 /** 注文ドキュメント */
@@ -33,17 +50,7 @@ export type Order = {
     userId: string;
 };
 
-/** 材料ドキュメント */
-export type Material = {
-    id: string;
-    name: string;
-    category: string;
-    totalAmount: number;  // 単位に対する総量（例: 2本, 3個 など）
-    unit: string;
-    unitCapacity: number;  // 単位当たりの容量（例: 1本あたり"500"ml など）
-    unitPrice: number;  // 単価（例: 1本あたり"2000"円 など）
-    note: string;
-};
+
 
 /** 商品とその選択数 */
 export type CartItem = {
