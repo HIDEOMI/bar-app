@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Product, CartItem } from "../types/types";
+import { Product, CartItem, Material } from "../types/types";
 import { getProductsByCategory } from "../services/products";
 import { createOrder } from "../services/orders";
 import { getMaterials, updateMaterial } from "../services/materials";
@@ -101,10 +101,10 @@ const MainMenu: React.FC = () => {
                 const product = item.product;
                 for (const materialInProduct of product.materials) {
                     const materialId = materialInProduct.id;
-                    const material = materials.find((m) => m.id === materialId);
-                    const remainingQuantity = material.quantity - materialInProduct.quantity;
+                    const material: Material = materials.find((m) => m.id === materialId);
+                    const remainingTotalAmount = material.totalAmount - (materialInProduct.quantity / material.unitCapacity);
                     if (material) {
-                        await updateMaterial(materialId, { quantity: remainingQuantity, isAvailable: remainingQuantity > 0 });
+                        await updateMaterial(materialId, { totalAmount: remainingTotalAmount });
                     }
                 }
             }
