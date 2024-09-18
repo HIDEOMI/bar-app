@@ -1,7 +1,6 @@
-import { getFirestore, doc, getDoc } from "firebase/firestore";
-import app from './firebase';
+import { doc, getDoc } from "firebase/firestore";
+import { db } from '../firebase/firebaseConfig';
 
-const db = getFirestore(app);
 
 /** ユーザーIDに基づいてユーザー情報を取得する関数 */
 export const getUserById = async (userId: string) => {

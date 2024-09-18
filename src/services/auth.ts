@@ -1,12 +1,9 @@
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
-import app from './firebase';
+import {signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { auth, provider, db } from '../firebase/firebaseConfig';
 
-const provider = new GoogleAuthProvider();
-const auth = getAuth(app);
-const db = getFirestore(app);
 
-// Googleサインインの関数
+/** Googleサインインの関数 */
 export const signInWithGoogle = async () => {
     try {
         const result = await signInWithPopup(auth, provider);
@@ -32,7 +29,7 @@ export const signInWithGoogle = async () => {
     }
 };
 
-// サインアウトの関数
+/** サインアウトの関数 */
 export const logout = async () => {
     try {
         await signOut(auth);
@@ -42,7 +39,7 @@ export const logout = async () => {
     }
 };
 
-// 認証状態を監視する関数
+/** 認証状態を監視する関数 */
 export const onAuthStateChange = (callback: (user: any) => void) => {
     return onAuthStateChanged(auth, (user) => {
         callback(user);

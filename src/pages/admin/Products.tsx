@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { getAllProducts, addProduct, deleteProduct } from '../../services/products';
-// import { getAllProducts, addProduct, updateProduct, deleteProduct } from '../../services/products';
-import { getMaterials } from '../../services/materials';
 import { Product, Material } from '../../types/types';
+import { getAllProducts, addProduct, deleteProduct } from '../../services/products';
+import { getMaterials } from '../../services/materials';
+// import { getAllProducts, addProduct, updateProduct, deleteProduct } from '../../services/products';
 
 
 const Products: React.FC = () => {

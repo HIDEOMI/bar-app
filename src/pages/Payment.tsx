@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { getUnpaidOrdersByUserId } from "../services/orders";
-import { useAuth } from "../components/AuthProvider";
 import { getFirestore, writeBatch, doc } from "firebase/firestore";
 import { Order } from "../types/types";
+import { getUnpaidOrdersByUserId } from "../services/orders";
+import { useAuth } from "../components/AuthProvider";
 
 const Payment: React.FC = () => {
     const { user } = useAuth();

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getMaterials, addMaterial, updateMaterial, deleteMaterial } from '../../services/materials';
 import { Material } from "../../types/types"
+import { getMaterials, addMaterial, updateMaterial, deleteMaterial } from '../../services/materials';
 
 
 const Materials: React.FC = () => {

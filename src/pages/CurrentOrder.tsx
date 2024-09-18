@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useAuth } from "../components/AuthProvider";
-import { createOrder } from "../services/orders";
 import { Product, CartItem } from "../types/types";
+import { createOrder } from "../services/orders";
+import { useAuth } from "../components/AuthProvider";
 
 
 const Order: React.FC<{ products: Product[] }> = ({ products }) => {

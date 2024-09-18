@@ -1,8 +1,7 @@
-import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import app from '../services/firebase';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { Material } from "../types/types"
+import { db } from '../firebase/firebaseConfig';
 
-const db = getFirestore(app);
 
 export const getMaterials = async (): Promise<Material[]> => {
     const querySnapshot = await getDocs(collection(db, 'materials'));
