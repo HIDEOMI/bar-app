@@ -1,7 +1,6 @@
-import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
-import app from './firebase';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
+import { db } from '../firebase/firebaseConfig';
 
-const db = getFirestore(app);
 
 /** 指定したカテゴリの商品リストを取得する関数 */
 export const getProductsByCategory = async (category: string) => {

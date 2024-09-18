@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { Order, CachedUser } from "../../types/types";
 import { getAllOrders, updateOrderStatus } from '../../services/orders';
 import { getUserById } from '../../services/users';
-import { Order, CachedUser } from "../../types/types";
 
 
 const CACHE_EXPIRATION_TIME = 10 * 60 * 1000;  // キャッシュの有効期限を10分（600000ミリ秒）に設定

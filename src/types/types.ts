@@ -1,3 +1,4 @@
+/** 商品ドキュメント */
 export type Product = {
     id: string;
     name: string;
@@ -8,11 +9,7 @@ export type Product = {
     materials: string[];
 };
 
-export type CartItem = {
-    product: Product;
-    quantity: number;
-};
-
+/** 注文ドキュメント */
 export type Order = {
     id: string;
     totalPrice: number;
@@ -28,11 +25,18 @@ export type Order = {
     userId: string;
 };
 
+/** 材料ドキュメント */
 export type Material = {
     id: string;
     name: string;
     quantity: number;
     unit: string;
+};
+
+/** 商品とその選択数 */
+export type CartItem = {
+    product: Product;
+    quantity: number;
 };
 
 export type CachedUser = {

@@ -1,7 +1,7 @@
-// src/hooks/useIngredients.ts
 import { useState, useEffect } from 'react';
-import { db } from '../firebase/firebaseConfig';
 import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase/firebaseConfig';
+
 
 export const useIngredients = () => {
   const [ingredients, setIngredients] = useState<any[]>([]);

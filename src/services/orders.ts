@@ -1,7 +1,6 @@
-import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, Timestamp, query, where } from "firebase/firestore";
-import app from './firebase';
+import { collection, getDocs, addDoc, updateDoc, doc, Timestamp, query, where } from "firebase/firestore";
+import { db } from '../firebase/firebaseConfig';
 
-const db = getFirestore(app);
 
 /** 注文をFirestoreに保存する関数 */
 export const createOrder = async (userId: string, products: any[], totalPrice: number, note: string) => {
@@ -21,7 +20,6 @@ export const createOrder = async (userId: string, products: any[], totalPrice: n
     }
 };
 
-
 /** すべての注文を取得する関数 */
 export const getAllOrders = async () => {
     const querySnapshot = await getDocs(collection(db, "orders"));
@@ -38,7 +36,6 @@ export const getAllOrders = async () => {
         };
     });
 };
-
 
 /** ユーザーの注文履歴を取得する関数 */
 export const getOrdersByUserId = async (userId: string) => {
