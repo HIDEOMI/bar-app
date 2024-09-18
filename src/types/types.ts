@@ -38,9 +38,10 @@ export type Material = {
     id: string;
     name: string;
     category: string;
+    totalAmount: number;  // 単位に対する総量（例: 2本, 3個 など）
     unit: string;
-    totalAmount: number;  // 総量（例: 1000ml, 500g など）
-    unitCapacity: number;  // 単位当たりの容量（例: 50mlごとに取り出す場合は50）
+    unitCapacity: number;  // 単位当たりの容量（例: 1本あたり"500"ml など）
+    unitPrice: number;  // 単価（例: 1本あたり"2000"円 など）
     note: string;
 };
 

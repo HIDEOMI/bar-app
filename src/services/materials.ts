@@ -7,8 +7,7 @@ export const getMaterials = async (): Promise<Material[]> => {
     const querySnapshot = await getDocs(collection(db, 'materials'));
     return querySnapshot.docs.map(doc => {
         const data = doc.data();
-
-        return {
+        const material: Material = {
             id: doc.id,
             name: data.name,
             category: data.category,
@@ -16,7 +15,9 @@ export const getMaterials = async (): Promise<Material[]> => {
             unit: data.unit,
             unitCapacity: data.unitCapacity,
             note: data.note,
-        } as Material;
+            unitPrice: data.unitPrice,
+        };
+        return material;
     });
 };
 
@@ -28,6 +29,7 @@ export const addMaterial = async (material: Material) => {
         unit: material.unit,
         unitCapacity: material.unitCapacity,
         note: material.note,
+        unitPrice: material.unitPrice,
     });
 };
 
@@ -35,13 +37,13 @@ export const updateMaterial = async (id: string, updatedData: any) => {
     const materialRef = doc(db, 'materials', id);
     // console.log(materialRef);
     await updateDoc(materialRef, {
-        id: updatedData.id,
         name: updatedData.name,
         category: updatedData.category,
         totalAmount: updatedData.totalAmount,
         unit: updatedData.unit,
         unitCapacity: updatedData.unitCapacity,
         note: updatedData.note,
+        unitPrice: updatedData.unitPrice,
     });
 };
 

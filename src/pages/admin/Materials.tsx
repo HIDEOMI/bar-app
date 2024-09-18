@@ -22,7 +22,6 @@ const Materials: React.FC = () => {
             await updateMaterial(material.id, material);
         } else {
             // 新規追加モードの場合、新しい材料を追加
-
             await addMaterial(material);
         }
         const data = await getMaterials();
@@ -58,7 +57,7 @@ const Materials: React.FC = () => {
                 />
             ) : (
                 <MaterialForm
-                    material={{ id: '', name: '', totalAmount: 0, unit: '', unitCapacity: 0, category: '', note: '' }}  // 新規材料の初期値
+                    material={{ id: '', name: '', category: '', totalAmount: 0, unit: '', unitCapacity: 0, unitPrice: 0, note: '' }}  // 新規材料の初期値
                     existingMaterials={materials}
                     onSave={handleSaveMaterial}
                     onCancel={handleCancelEdit}
@@ -69,6 +68,7 @@ const Materials: React.FC = () => {
                 {materials.map((material) => (
                     <li key={material.id}>
                         {material.name} - {material.totalAmount} {material.unit}:{material.unitCapacity} ({material.category}) <br />
+                        ￥: {material.unitPrice} <br />
                         備考: {material.note} <br />
                         <button onClick={() => handleEditMaterial(material)}>編集</button>
                         <button onClick={() => handleDeleteMaterial(material.id)}>削除</button>

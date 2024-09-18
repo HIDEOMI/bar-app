@@ -26,7 +26,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ material, onSave, onCancel,
         setFormMaterial({ ...formMaterial, [name]: type === "number" ? Number(value) : value });
     };
 
-    /** 追加ボタンを押したときの処理 */
+    /** 保存ボタンを押したときの処理 */
     const handleSubmit = () => {
         // バリデーション: 材料名が空欄
         if (formMaterial.name.trim() === '') {
@@ -58,6 +58,12 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ material, onSave, onCancel,
         // バリデーション: 単位当たりの容量が空欄
         if (formMaterial.unitCapacity === 0) {
             setError('単位当たりの容量を入力してください。');
+            return;
+        }
+
+        // バリデーション: 単価が空欄
+        if (formMaterial.unitPrice === 0) {
+            setError('単価を入力してください。');
             return;
         }
 
@@ -114,6 +120,15 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ material, onSave, onCancel,
                 name="unitCapacity"
                 placeholder="単位当たりの容量"
                 value={formMaterial.unitCapacity}
+                onChange={handleChange}
+            />
+            <br />
+            <label >単価: </label>
+            <input
+                type="number"
+                name="unitPrice"
+                placeholder="単価"
+                value={formMaterial.unitPrice}
                 onChange={handleChange}
             />
             <br />
