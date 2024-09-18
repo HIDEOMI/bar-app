@@ -23,12 +23,9 @@ const Products: React.FC = () => {
         isAvailable: false,
         materials: [],
     });
+    const [isEditing, setIsEditing] = useState<boolean>(false);  // 編集モードかどうかを管理
+    const [message, setMessage] = useState<string | null>(null);  // メッセージを管理
 
-    /** react-select 用の材料オプション */
-    const materialOptions = materials.map(material => ({
-        value: material.id,
-        label: material.name,
-    }));
 
     const categoriesList = ['カクテル', 'ビール', 'ワイン'];  // カテゴリの選択肢
     const baseList = ['ウイスキー', 'ジン', 'ウォッカ', 'ラム'];  // ベースの選択肢
@@ -43,26 +40,52 @@ const Products: React.FC = () => {
         fetchData();
     }, []);
 
-    /** 商品の材料リストを追加する処理 */
-    const handleSelectMaterial = (selectedOptions: any) => {
-        const selected = selectedOptions.map((option: any) => {
-            const material = materials.find(m => m.id === option.value);
-            const quantity = selectedMaterials.find(m => m.id === option.value)?.quantity;
-            return material ? {
-                id: material.id,
-                name: material.name,
-                quantity: quantity,
-                isAvailable: material.totalAmount > 0,
-            } : null;
-        }).filter(Boolean);  // null を除去
-        setSelectedMaterials(selected);
+    /** react-select 用の材料オプション */
+    const materialOptions = materials.map(material => ({
+        value: material.id,
+        label: material.name,
+    }));
+
+    /** メッセージを一定時間表示した後に非表示にする処理 */
+    const showMessage = (msg: string) => {
+        setMessage(msg);
+        setTimeout(() => {
+            setMessage(null);
+        }, 2000);  // 2秒後にメッセージを非表示
     };
 
-    /** 商品を登録する処理 */
-    const handleAddProduct = async () => {
-        newProduct.materials = selectedMaterials;  // 登録直前に材料リストを登録する
-        await addProduct(newProduct);
-        // 商品を追加した後は newProductを初期化する
+    /** 商品追加または編集する処理 */
+    const handleSaveProduct = async () => {
+        if (isEditing) {
+            await updateProduct(newProduct.id, { ...newProduct, materials: selectedMaterials });
+            showMessage('商品を更新しました');
+        } else {
+            await addProduct({ ...newProduct, materials: selectedMaterials });
+            showMessage('商品を追加しました');
+        }
+
+        resetForm();
+        const productsData = await getAllProducts();
+        setProducts(productsData);
+    };
+
+    /** 商品を編集する処理 */
+    const handleEditProduct = (product: Product) => {
+        setNewProduct(product);  // 編集モードで既存商品をセット
+        setSelectedMaterials(product.materials);
+        setIsEditing(true);
+    };
+
+    /** 商品を削除する処理 */
+    const handleDeleteProduct = async (id: string) => {
+        await deleteProduct(id);
+        showMessage('商品を削除しました');
+        const productsData = await getAllProducts();
+        setProducts(productsData);
+    };
+
+    /** フォームのリセット処理 */
+    const resetForm = () => {
         setNewProduct({
             id: '',
             name: '',
@@ -74,11 +97,12 @@ const Products: React.FC = () => {
             alc: 0,
             recipe: '',
             imageUrl: '',
-            isAvailable: true,
+            isAvailable: false,
             materials: [],
         });
-        const productsData = await getAllProducts();
-        setProducts(productsData);
+        setSelectedMaterials([]);
+        setIsEditing(false);  // 編集モードを解除
+        showMessage('操作をキャンセルしました');  // キャンセルメッセージを表示
     };
 
     /** 入力値が変更されたときに商品の情報を更新する処理 */
@@ -95,6 +119,21 @@ const Products: React.FC = () => {
         setNewProduct({ ...newProduct, [name]: selectedValues });
     };
 
+    /** 商品の材料リストを追加する処理 */
+    const handleSelectMaterial = (selectedOptions: any) => {
+        const selected = selectedOptions.map((option: any) => {
+            const material = materials.find(m => m.id === option.value);
+            const quantity = selectedMaterials.find(m => m.id === option.value)?.quantity;
+            return material ? {
+                id: material.id,
+                name: material.name,
+                quantity: quantity,
+                isAvailable: material.totalAmount > 0,
+            } : null;
+        }).filter(Boolean);  // null を除去
+        setSelectedMaterials(selected);
+    };
+
     /** 材料の量を動的に変更する処理 */
     const handleQuantityChange = (index: number, newQuantity: number) => {
         const updatedMaterials = [...selectedMaterials];
@@ -104,7 +143,7 @@ const Products: React.FC = () => {
 
     return (
         <div>
-            <h2>商品登録</h2>
+            <h2>{isEditing ? '商品編集' : '商品登録'}</h2>
 
             <label>商品名</label>
             <input
@@ -194,6 +233,7 @@ const Products: React.FC = () => {
             <Select
                 isMulti  // 複数選択可能
                 options={materialOptions}  // 材料の選択肢を表示
+                value={selectedMaterials.map(m => ({ value: m.id, label: m.name }))}  // 選択された材料を反映
                 onChange={handleSelectMaterial}  // 選択変更時の処理
             />
 
@@ -212,7 +252,8 @@ const Products: React.FC = () => {
                 ))}
             </ul>
 
-            <button onClick={handleAddProduct}>商品を追加</button>
+            <button onClick={handleSaveProduct}>{isEditing ? '商品を更新' : '商品を追加'}</button>
+            <button onClick={resetForm}>キャンセル</button>
 
             <h3>商品リスト</h3>
             <ul>
@@ -227,8 +268,8 @@ const Products: React.FC = () => {
                         {/* <p>材料: {product.materials}</p> */}
                         {/* <p>材料: {console.log(product.materials)}</p> */}
                         <p>在庫: {product.isAvailable ? 'あり' : 'なし'}</p>
-                        <button onClick={() => console.log('編集機能の実装が必要です')}>編集</button>
-                        <button onClick={() => console.log('削除機能の実装が必要です')}>削除</button>
+                        <button onClick={() => handleEditProduct(product)}>編集</button>
+                        <button onClick={() => handleDeleteProduct(product.id)}>削除</button>
                     </li>
                 ))}
             </ul>
