@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Product, CartItem, Material } from "../types/types";
 import { getProductsByCategory } from "../services/products";
 import { createOrder } from "../services/orders";
-import { getMaterials, updateMaterial } from "../services/materials";
+import { getAllMaterials, updateMaterial } from "../services/materials";
 import { useAuth } from "../components/AuthProvider";
 
 
@@ -36,7 +36,7 @@ const MainMenu: React.FC = () => {
                     materials: product.materials || []  // materialsがない場合は空配列
                 }));
                 setProducts(mappedProducts);
-                const materialsData = await getMaterials();
+                const materialsData = await getAllMaterials();
                 setMaterials(materialsData);
                 console.log(materialsData);
             } catch (error) {

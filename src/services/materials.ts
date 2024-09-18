@@ -1,24 +1,32 @@
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
 import { Material } from "../types/types"
 import { db } from '../firebase/firebaseConfig';
 
 
-export const getMaterials = async (): Promise<Material[]> => {
-    const querySnapshot = await getDocs(collection(db, 'materials'));
-    return querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        const material: Material = {
-            id: doc.id,
-            name: data.name,
-            category: data.category,
-            totalAmount: data.totalAmount,
-            unit: data.unit,
-            unitCapacity: data.unitCapacity,
-            note: data.note,
-            unitPrice: data.unitPrice,
-        };
-        return material;
-    });
+/** 指定したカテゴリの商品リストを取得する関数 */
+export const getMaterialsByCategory = async (category: string) => {
+    let q;
+    if (category === "All") {
+        q = collection(db, "materials");
+    } else {
+        q = query(collection(db, "materials"), where("category", "==", category));
+    }
+
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        name: doc.data().name,
+        category: doc.data().category,
+        totalAmount: doc.data().totalAmount,
+        unit: doc.data().unit,
+        unitCapacity: doc.data().unitCapacity,
+        note: doc.data().note,
+        unitPrice: doc.data().unitPrice,
+    }) as Material);
+};
+
+export const getAllMaterials = async () => {
+    return getMaterialsByCategory("All");
 };
 
 export const addMaterial = async (material: Material) => {
