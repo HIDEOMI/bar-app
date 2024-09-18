@@ -11,8 +11,9 @@ export const getMaterials = async (): Promise<Material[]> => {
         return {
             id: doc.id,
             name: data.name,
-            quantity: data.quantity,
+            totalAmount: data.totalAmount,
             unit: data.unit,
+            unitCapacity: data.unitCapacity,
         } as Material;
     });
 };

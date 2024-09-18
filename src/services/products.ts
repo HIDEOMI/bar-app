@@ -19,7 +19,7 @@ export const getProductsByCategory = async (category: string) => {
         price: doc.data().price,
         description: doc.data().description,
         imageUrl: doc.data().imageUrl,
-        stock: doc.data().stock
+        isAvailable: doc.data().isAvailable,
     }));
 };
 

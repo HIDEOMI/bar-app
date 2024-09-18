@@ -37,9 +37,11 @@ export type Order = {
 export type Material = {
     id: string;
     name: string;
+    category: string;
     unit: string;
     totalAmount: number;  // 総量（例: 1000ml, 500g など）
     unitCapacity: number;  // 単位当たりの容量（例: 50mlごとに取り出す場合は50）
+    note: string;
 };
 
 /** 商品とその選択数 */

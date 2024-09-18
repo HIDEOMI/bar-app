@@ -29,6 +29,7 @@ const Products: React.FC = () => {
                 description: doc.description,
                 category: doc.category,
                 imageUrl: doc.imageUrl,
+                isAvailable: doc.isAvailable,
                 materials: doc.materials || [],
             }));
             setProducts(mappedProducts);
@@ -55,6 +56,7 @@ const Products: React.FC = () => {
             description: doc.description,
             category: doc.category,
             imageUrl: doc.imageUrl,
+            isAvailable: doc.isAvailable,
             materials: doc.materials || [],
         }));
         setProducts(mappedProducts);
@@ -70,6 +72,7 @@ const Products: React.FC = () => {
             description: doc.description,
             category: doc.category,
             imageUrl: doc.imageUrl,
+            isAvailable: doc.isAvailable,
             materials: doc.materials || [],
         }));
         setProducts(mappedProducts);

@@ -32,12 +32,13 @@ const MainMenu: React.FC = () => {
                     price: product.price,
                     description: product.description,
                     imageUrl: product.imageUrl,
-                    stock: product.stock,
+                    isAvailable: product.isAvailable,
                     materials: product.materials || []  // materialsがない場合は空配列
                 }));
-                const materialsData = await getMaterials();
                 setProducts(mappedProducts);
+                const materialsData = await getMaterials();
                 setMaterials(materialsData);
+                console.log(materialsData);
             } catch (error) {
                 console.error("Error fetching products: ", error);
             } finally {
@@ -46,8 +47,8 @@ const MainMenu: React.FC = () => {
         };
 
         fetchProducts();
-        // fetchData();
-    }, [category, products]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [category]);  // category のみを依存配列に含める
 
     const isProductAvailable = (product: Product) => {
         return product.materials.every((materialId) => {
@@ -98,10 +99,12 @@ const MainMenu: React.FC = () => {
             // 使用した材料の在庫を減らす
             for (const item of cart) {
                 const product = item.product;
-                for (const materialId of product.materials) {
+                for (const materialInProduct of product.materials) {
+                    const materialId = materialInProduct.id;
                     const material = materials.find((m) => m.id === materialId);
+                    const remainingQuantity = material.quantity - materialInProduct.quantity;
                     if (material) {
-                        await updateMaterial(materialId, { quantity: material.quantity - item.quantity });
+                        await updateMaterial(materialId, { quantity: remainingQuantity, isAvailable: remainingQuantity > 0 });
                     }
                 }
             }
