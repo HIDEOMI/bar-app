@@ -11,20 +11,38 @@ export const getMaterials = async (): Promise<Material[]> => {
         return {
             id: doc.id,
             name: data.name,
+            category: data.category,
             totalAmount: data.totalAmount,
             unit: data.unit,
             unitCapacity: data.unitCapacity,
+            note: data.note,
         } as Material;
     });
 };
 
-export const addMaterial = async (material: any) => {
-    await addDoc(collection(db, 'materials'), material);
+export const addMaterial = async (material: Material) => {
+    await addDoc(collection(db, 'materials'), {
+        name: material.name,
+        category: material.category,
+        totalAmount: material.totalAmount,
+        unit: material.unit,
+        unitCapacity: material.unitCapacity,
+        note: material.note,
+    });
 };
 
 export const updateMaterial = async (id: string, updatedData: any) => {
     const materialRef = doc(db, 'materials', id);
-    await updateDoc(materialRef, updatedData);
+    // console.log(materialRef);
+    await updateDoc(materialRef, {
+        id: updatedData.id,
+        name: updatedData.name,
+        category: updatedData.category,
+        totalAmount: updatedData.totalAmount,
+        unit: updatedData.unit,
+        unitCapacity: updatedData.unitCapacity,
+        note: updatedData.note,
+    });
 };
 
 export const deleteMaterial = async (id: string) => {

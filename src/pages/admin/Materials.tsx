@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Material } from "../../types/types"
 import { getMaterials, addMaterial, updateMaterial, deleteMaterial } from '../../services/materials';
+import MaterialForm from '../../components/MaterialForm';
 
 
 const Materials: React.FC = () => {
     const [materials, setMaterials] = useState<Material[]>([]);
-    const [newMaterial, setNewMaterial] = useState({ name: '', category: '', totalAmount: 0, unit: '', unitCapacity: 0, note: '' });
-    const categories = ['choose a category', '蒸留酒', '醸造酒', 'リキュール', 'ソフトドリンク', 'シロップ', 'その他'];  // カテゴリの選択肢
+    const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);  // 編集中の材料
 
     useEffect(() => {
         const fetchMaterials = async () => {
@@ -16,20 +16,26 @@ const Materials: React.FC = () => {
         fetchMaterials();
     }, []);
 
-    /** 新しい材料を追加する処理 */
-    const handleAddMaterial = async () => {
-        await addMaterial(newMaterial);
-        setNewMaterial({ name: '', category: '', totalAmount: 0, unit: '', unitCapacity: 0, note: '' });
-        // 材料リストを再取得
+    const handleSaveMaterial = async (material: Material) => {
+        if (material.id) {
+            // 編集モードの場合、既存の材料を更新
+            await updateMaterial(material.id, material);
+        } else {
+            // 新規追加モードの場合、新しい材料を追加
+
+            await addMaterial(material);
+        }
         const data = await getMaterials();
         setMaterials(data);
+        setEditingMaterial(null); // フォームをリセット
     };
 
-    /** 材料を更新する処理 */
-    const handleUpdateMaterial = async (id: string, updatedData: Partial<Material>) => {
-        await updateMaterial(id, updatedData);
-        const data = await getMaterials();
-        setMaterials(data);
+    const handleEditMaterial = (material: Material) => {
+        setEditingMaterial(material);
+    };
+
+    const handleCancelEdit = () => {
+        setEditingMaterial(null);  // 編集モードを解除
     };
 
     /** 材料を削除する処理 */
@@ -41,72 +47,30 @@ const Materials: React.FC = () => {
 
     return (
         <div>
-            <div>
-                <h2>材料管理</h2>
-                <h3>新しい材料を追加</h3>
-                <label>材料名: </label>
-                <input
-                    type="text"
-                    placeholder="材料名"
-                    value={newMaterial.name}
-                    onChange={(e) => setNewMaterial({ ...newMaterial, name: e.target.value })}
+            <h2>材料管理</h2>
+            {/* 新規追加または編集時に共通のフォームを表示 */}
+            {editingMaterial ? (
+                <MaterialForm
+                    material={editingMaterial}
+                    existingMaterials={materials}
+                    onSave={handleSaveMaterial}
+                    onCancel={handleCancelEdit}
                 />
-                <br />
-                <label>カテゴリ: </label>
-                <select
-                    value={newMaterial.category}
-                    onChange={(e) => setNewMaterial({ ...newMaterial, category: e.target.value })}
-                >
-                    {categories.map((category) => (
-                        <option key={category} value={category}>
-                            {category}
-                        </option>
-                    ))}
-                </select>
-                <br />
-                <label >数量: </label>
-                <input
-                    type="number"
-                    placeholder="数量"
-                    value={newMaterial.totalAmount}
-                    onChange={(e) => setNewMaterial({ ...newMaterial, totalAmount: Number(e.target.value) })}
+            ) : (
+                <MaterialForm
+                    material={{ id: '', name: '', totalAmount: 0, unit: '', unitCapacity: 0, category: '', note: '' }}  // 新規材料の初期値
+                    existingMaterials={materials}
+                    onSave={handleSaveMaterial}
+                    onCancel={handleCancelEdit}
                 />
-                <br />
-                <label >単位: </label>
-                <input
-                    type="text"
-                    placeholder="単位"
-                    value={newMaterial.unit}
-                    onChange={(e) => setNewMaterial({ ...newMaterial, unit: e.target.value })}
-                />
-                <br />
-                <label >単位当たりの容量:</label>
-                <input
-                    type="number"
-                    placeholder="単位当たりの容量"
-                    value={newMaterial.unitCapacity}
-                    onChange={(e) => setNewMaterial({ ...newMaterial, unitCapacity: Number(e.target.value) })}
-                />
-                <br />
-                <label >備考:</label>
-                <input
-                    type="text"
-                    placeholder="備考"
-                    value={newMaterial.note}
-                    onChange={(e) => setNewMaterial({ ...newMaterial, note: e.target.value })}
-                />
-                <br />
-                <button onClick={handleAddMaterial}>追加</button>
-            </div>
+            )}
             <h3>材料リスト</h3>
             <ul>
                 {materials.map((material) => (
                     <li key={material.id}>
-                        {material.name} - {material.totalAmount} {material.unit}
-                        {material.category}
-                        {material.note}
-                        <button onClick={() => handleUpdateMaterial(material.id, { totalAmount: material.totalAmount + 1 })}>+1</button>
-                        <button onClick={() => handleUpdateMaterial(material.id, { totalAmount: material.totalAmount - 1 })}>-1</button>
+                        {material.name} - {material.totalAmount} {material.unit}:{material.unitCapacity} ({material.category}) <br />
+                        備考: {material.note} <br />
+                        <button onClick={() => handleEditMaterial(material)}>編集</button>
                         <button onClick={() => handleDeleteMaterial(material.id)}>削除</button>
                     </li>
                 ))}
