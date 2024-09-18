@@ -4,13 +4,13 @@ import { Material } from '../types/types';
 
 type MaterialFormProps = {
     material: Material;
+    categories: string[];
     onSave: (material: Material) => void;
     onCancel: () => void;
     existingMaterials: Material[];  // 既存の材料リストを追加
 };
 
-const MaterialForm: React.FC<MaterialFormProps> = ({ material, onSave, onCancel, existingMaterials }) => {
-    const categories = ['choose a category', '蒸留酒', '醸造酒', 'リキュール', 'ソフトドリンク', 'シロップ', 'その他'];  // カテゴリの選択肢
+const MaterialForm: React.FC<MaterialFormProps> = ({ material, categories, onSave, onCancel, existingMaterials }) => {
     const [formMaterial, setFormMaterial] = useState<Material>(material);
     const [error, setError] = useState<string | null>(null);  // エラーメッセージの状態
 

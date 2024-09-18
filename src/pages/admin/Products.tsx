@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Product, Material } from '../../types/types';
 import { getAllProducts, addProduct, deleteProduct } from '../../services/products';
-import { getMaterials } from '../../services/materials';
+import { getAllMaterials } from '../../services/materials';
 // import { getAllProducts, addProduct, updateProduct, deleteProduct } from '../../services/products';
 
 
@@ -20,7 +20,7 @@ const Products: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             const productsData = await getAllProducts();
-            const materialsData = await getMaterials();
+            const materialsData = await getAllMaterials();
 
             const mappedProducts: Product[] = productsData.map((doc: any) => ({
                 id: doc.id,

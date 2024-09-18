@@ -1,18 +1,18 @@
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
 import { db } from '../firebase/firebaseConfig';
+import { Product } from "../types/types";
 
 
 /** 指定したカテゴリの商品リストを取得する関数 */
 export const getProductsByCategory = async (category: string) => {
     let q;
-    if (category === "all") {
+    if (category === "All") {
         q = collection(db, "products");
     } else {
         q = query(collection(db, "products"), where("category", "==", category));
     }
 
     const querySnapshot = await getDocs(q);
-
     return querySnapshot.docs.map(doc => ({
         id: doc.id,
         name: doc.data().name,
@@ -20,12 +20,11 @@ export const getProductsByCategory = async (category: string) => {
         description: doc.data().description,
         imageUrl: doc.data().imageUrl,
         isAvailable: doc.data().isAvailable,
-    }));
+    }) as Product);
 };
 
 export const getAllProducts = async () => {
-    const querySnapshot = await getDocs(collection(db, 'products'));
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return getProductsByCategory("All");
 };
 
 export const addProduct = async (product: any) => {
