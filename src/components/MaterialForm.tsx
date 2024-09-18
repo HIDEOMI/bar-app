@@ -21,8 +21,6 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ material, categories, onSav
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, type, value } = e.target;
-        // console.log(e.target);
-        // setFormMaterial({ ...formMaterial, [name]:  value });
         setFormMaterial({ ...formMaterial, [name]: type === "number" ? Number(value) : value });
     };
 

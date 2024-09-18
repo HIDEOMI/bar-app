@@ -15,13 +15,7 @@ export const getMaterialsByCategory = async (category: string) => {
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({
         id: doc.id,
-        name: doc.data().name,
-        category: doc.data().category,
-        totalAmount: doc.data().totalAmount,
-        unit: doc.data().unit,
-        unitCapacity: doc.data().unitCapacity,
-        note: doc.data().note,
-        unitPrice: doc.data().unitPrice,
+        ...doc.data(),
     }) as Material);
 };
 

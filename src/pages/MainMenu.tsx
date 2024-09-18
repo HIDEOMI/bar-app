@@ -25,15 +25,9 @@ const MainMenu: React.FC = () => {
             setLoading(true);
             try {
                 const productsData = await getProductsByCategory(category);
-                console.log("取得した商品:", products);
-                const mappedProducts: Product[] = productsData.map((product: any) => ({
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    description: product.description,
-                    imageUrl: product.imageUrl,
-                    isAvailable: product.isAvailable,
-                    materials: product.materials || []  // materialsがない場合は空配列
+                console.log("取得した商品:", productsData);
+                const mappedProducts: Product[] = productsData.map((product: Product) => ({
+                    ...product,
                 }));
                 setProducts(mappedProducts);
                 const materialsData = await getAllMaterials();
