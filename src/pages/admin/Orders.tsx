@@ -12,10 +12,12 @@ const loadCacheFromLocalStorage = (): { [key: string]: CachedUser } => {
     const cache = localStorage.getItem('userCache');
     return cache ? JSON.parse(cache) : {};
 };
+
 /** ローカルストレージにキャッシュを保存する関数 */
 const saveCacheToLocalStorage = (cache: { [key: string]: CachedUser }) => {
     localStorage.setItem('userCache', JSON.stringify(cache));
 };
+
 /** キャッシュのサイズを制限する関数 */
 const enforceCacheSizeLimit = (cache: { [key: string]: CachedUser }): { [key: string]: CachedUser } => {
     const keys = Object.keys(cache);
@@ -30,65 +32,66 @@ const enforceCacheSizeLimit = (cache: { [key: string]: CachedUser }): { [key: st
     return cache;
 };
 
+
 const Orders: React.FC = () => {
-    const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(false);
+    const [orders, setOrders] = useState<Order[]>([]);
     const [userNames, setUserNames] = useState<{ [key: string]: string }>({}); // userId に対する displayName
-    const [selectedStatus, setSelectedStatus] = useState<string>("全て");  // デフォルトは全て
     const [userCache, setUserCache] = useState<{ [key: string]: CachedUser }>(loadCacheFromLocalStorage()); // ローカルストレージからキャッシュを読み込む
+    const [selectedStatus, setSelectedStatus] = useState<string>("全て");  // デフォルトは全て
 
     useEffect(() => {
         const fetchOrders = async () => {
             setLoading(true);
-            const data = await getAllOrders();
-            setOrders(data);
-            setLoading(false);
+            try {
+                const data = await getAllOrders();
+                setOrders(data);
+                const currentTime = Date.now();
+                // 各注文のユーザー情報を取得
+                const userNameMap: { [key: string]: string } = {};
 
-            const currentTime = Date.now();
-            // 各注文のユーザー情報を取得
-            const userNameMap: { [key: string]: string } = {};
+                for (const order of data) {
+                    if (userCache[order.userId]) {
+                        const cachedUser = userCache[order.userId];
 
-            for (const order of data) {
-                if (userCache[order.userId]) {
-                    const cachedUser = userCache[order.userId];
-
-                    // キャッシュの有効期限が切れていない場合はキャッシュを使用
-                    if (currentTime - cachedUser.timestamp < CACHE_EXPIRATION_TIME) {
-                        userNameMap[order.userId] = cachedUser.displayName;
+                        // キャッシュの有効期限が切れていない場合はキャッシュを使用
+                        if (currentTime - cachedUser.timestamp < CACHE_EXPIRATION_TIME) {
+                            userNameMap[order.userId] = cachedUser.displayName;
+                        } else {
+                            // 有効期限が切れている場合は再度Firestoreから取得
+                            const user = await getUserById(order.userId);
+                            if (user) {
+                                const displayName = user.displayName || "不明なユーザー";
+                                const newCache = { ...userCache, [order.userId]: { displayName, timestamp: currentTime } };
+                                setUserCache(enforceCacheSizeLimit(newCache)); // キャッシュを更新し、サイズを制限
+                                userNameMap[order.userId] = displayName;
+                            }
+                        }
                     } else {
-                        // 有効期限が切れている場合は再度Firestoreから取得
+                        // キャッシュに存在しない場合はFirestoreから取得
                         const user = await getUserById(order.userId);
                         if (user) {
                             const displayName = user.displayName || "不明なユーザー";
                             const newCache = { ...userCache, [order.userId]: { displayName, timestamp: currentTime } };
-                            setUserCache(enforceCacheSizeLimit(newCache)); // キャッシュを更新し、サイズを制限
+                            setUserCache(enforceCacheSizeLimit(newCache)); // 新しくキャッシュに保存し、サイズを制限
                             userNameMap[order.userId] = displayName;
+                        } else {
+                            userNameMap[order.userId] = "不明なユーザー";
                         }
                     }
-                } else {
-                    // キャッシュに存在しない場合はFirestoreから取得
-                    const user = await getUserById(order.userId);
-                    if (user) {
-                        const displayName = user.displayName || "不明なユーザー";
-                        const newCache = { ...userCache, [order.userId]: { displayName, timestamp: currentTime } };
-                        setUserCache(enforceCacheSizeLimit(newCache)); // 新しくキャッシュに保存し、サイズを制限
-                        userNameMap[order.userId] = displayName;
-                    } else {
-                        userNameMap[order.userId] = "不明なユーザー";
-                    }
                 }
+                setUserNames(userNameMap);
+            } catch (error) {
+                console.error("Error fetching datas: ", error);
+            } finally {
+                setLoading(false);
             }
-            setUserNames(userNameMap);
-            setLoading(false);
         };
-
         fetchOrders();
-    }, [userCache]);
-
-    // キャッシュが更新されたらローカルストレージに保存
-    useEffect(() => {
+        // キャッシュが更新されたらローカルストレージに保存
         saveCacheToLocalStorage(userCache);
     }, [userCache]);
+
 
     const handleStatusChange = async (orderId: string, newStatus: string) => {
         try {
@@ -99,6 +102,7 @@ const Orders: React.FC = () => {
             console.error("注文の状態を更新できませんでした: ", error);
         }
     };
+
 
     /** フィルタリングされた注文を取得 */
     const filteredOrders = selectedStatus === "全て"
@@ -121,29 +125,34 @@ const Orders: React.FC = () => {
             {loading ? (
                 <p>読み込み中...</p>
             ) : (
-                <ul>
-                    {/* フィルタされた注文を表示 */}
-                    {filteredOrders.map(order => (
-                        <li key={order.id}>
-                            <h3>注文ID: {order.id}</h3>
-                            <p>ユーザー: {userNames[order.userId] || "不明なユーザー"}</p> {/* displayNameを表示 */}
-                            <p>合計金額: ¥{order.totalPrice}</p>
-                            <p>備考: {order.note}</p>
-                            <p>注文日時: {order.createdAt.toDate().toLocaleString()}</p>
-                            <ul>
-                                {order.products.map(product => (
-                                    <li key={product.productId}>
-                                        {product.name} - 数量: {product.quantity} - 価格: ¥{product.price}
-                                    </li>
-                                ))}
-                            </ul>
-                            <p>現在の状態: {order.status}</p>
-                            <button onClick={() => handleStatusChange(order.id, "処理中")}>処理中にする</button>
-                            <button onClick={() => handleStatusChange(order.id, "未払い")}>未払いにする</button>
-                            <button onClick={() => handleStatusChange(order.id, "完了")}>完了にする</button>
-                        </li>
-                    ))}
-                </ul>
+                <div>
+                    {filteredOrders.length === 0 ? (
+                        <p>該当する注文がありません。</p>
+                    ) : (
+                        <ul>
+                            {filteredOrders.map(order => (
+                                <li key={order.id}>
+                                    <h3>注文ID: {order.id}</h3>
+                                    <p>ユーザー: {userNames[order.userId] || "不明なユーザー"}</p> {/* displayNameを表示 */}
+                                    <p>合計金額: ¥{order.totalPrice}</p>
+                                    <p>備考: {order.note}</p>
+                                    <p>注文日時: {order.createdAt.toDate().toLocaleString()}</p>
+                                    <ul>
+                                        {order.products.map(product => (
+                                            <li key={product.productId}>
+                                                {product.name} - 数量: {product.quantity} - 価格: ¥{product.price}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <p>現在の状態: {order.status}</p>
+                                    <button onClick={() => handleStatusChange(order.id, "処理中")}>処理中にする</button>
+                                    <button onClick={() => handleStatusChange(order.id, "未払い")}>未払いにする</button>
+                                    <button onClick={() => handleStatusChange(order.id, "完了")}>完了にする</button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
             )}
         </div>
     );

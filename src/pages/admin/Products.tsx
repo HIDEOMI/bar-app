@@ -43,7 +43,6 @@ const Products: React.FC = () => {
 
     useEffect(() => {
         const fetchDatas = async () => {
-            console.log("=== useEffect");
             setLoading(true);
             try {
                 const allProductsData = await getAllProducts();
