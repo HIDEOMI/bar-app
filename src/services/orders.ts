@@ -1,4 +1,4 @@
-import { collection, getDocs, addDoc, updateDoc, doc, Timestamp, query, where } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, doc, Timestamp, query, where, orderBy } from "firebase/firestore";
 import { db } from '../firebase/firebaseConfig';
 import { Order } from "../types/types";
 
@@ -23,7 +23,12 @@ export const createOrder = async (userId: string, products: any[], totalPrice: n
 
 /** すべての注文を取得する関数 */
 export const getAllOrders = async () => {
-    const querySnapshot = await getDocs(collection(db, "orders"));
+    const ordersQuery = query(
+        collection(db, 'orders'),
+        orderBy('createdAt', 'asc')
+    );
+    const querySnapshot = await getDocs(ordersQuery);
+
     return querySnapshot.docs.map(doc => {
         const data = doc.data();
         return {
@@ -35,8 +40,12 @@ export const getAllOrders = async () => {
 
 /** ユーザーの注文履歴を取得する関数 */
 export const getOrdersByUserId = async (userId: string) => {
-    const q = query(collection(db, "orders"), where("userId", "==", userId));
-    const querySnapshot = await getDocs(q);
+    const ordersQuery = query(
+        collection(db, 'orders'),
+        where("userId", "==", userId),
+        orderBy('createdAt', 'asc')
+    );
+    const querySnapshot = await getDocs(ordersQuery);
 
     return querySnapshot.docs.map(doc => {
         const data = doc.data();
@@ -52,7 +61,8 @@ export const getUnpaidOrdersByUserId = async (userId: string) => {
     const q = query(
         collection(db, "orders"),
         where("userId", "==", userId),
-        where("status", "==", "未払い")
+        where("status", "==", "未払い"),
+        orderBy('createdAt', 'asc')
     );
     const querySnapshot = await getDocs(q);
 
