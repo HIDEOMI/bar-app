@@ -4,7 +4,7 @@ import { getOrdersByUserId } from "../services/orders";
 import { useAuth } from "../components/AuthProvider";  // ユーザー情報を取得
 
 
-const OrderHistory: React.FC = () => {
+const MyOrders: React.FC = () => {
     const { user } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(false);
@@ -70,4 +70,4 @@ const OrderHistory: React.FC = () => {
     );
 };
 
-export default OrderHistory;
+export default MyOrders;

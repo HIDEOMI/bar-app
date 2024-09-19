@@ -8,7 +8,7 @@ import { AuthProvider, useAuth } from "./components/AuthProvider";
 import Layout from './components/Layout';
 import Login from "./pages/Login";
 import MainMenu from './pages/MainMenu';
-import OrderHistory from "./pages/OrderHistory";
+import MyOrders from "./pages/MyOrders";
 import Payment from "./pages/Payment";
 import AdminDashboard from './pages/admin/AdminDashboard';
 
@@ -41,7 +41,7 @@ const App: React.FC = () => {
                         <Route path="/" element={<RequireAuth><MainMenu /></RequireAuth>} />
                         {/* <Route path="/" element={<MainMenu />} /> */}
                         <Route path="/login" element={<Login />} />
-                        <Route path="/order_history" element={<OrderHistory />} />  {/* 注文履歴のルートを追加 */}
+                        <Route path="/my_orders" element={<MyOrders />} />  {/* 注文履歴のルートを追加 */}
                         <Route path="/payment" element={<Payment />} />  {/* 支払いページのルート */}
                         {/* 管理者専用ルート */}
                         <Route path="/admin/*" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
