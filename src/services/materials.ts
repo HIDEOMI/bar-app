@@ -1,10 +1,11 @@
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
-import { Material } from "../types/types"
 import { db } from '../firebase/firebaseConfig';
+import { Material } from "../types/types"
 
 
 /** 指定したカテゴリの商品リストを取得する関数 */
 export const getMaterialsByCategory = async (category: string) => {
+    console.log("=== リクエスト：getMaterialsByCategory() ===");
     let q;
     if (category === "All") {
         q = collection(db, "materials");
@@ -13,16 +14,11 @@ export const getMaterialsByCategory = async (category: string) => {
     }
 
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
+    const materials = querySnapshot.docs.map(doc => ({
         id: doc.id,
-        name: doc.data().name,
-        category: doc.data().category,
-        totalAmount: doc.data().totalAmount,
-        unit: doc.data().unit,
-        unitCapacity: doc.data().unitCapacity,
-        note: doc.data().note,
-        unitPrice: doc.data().unitPrice,
-    }) as Material);
+        ...doc.data(),
+    }) as Material)
+    return materials;
 };
 
 export const getAllMaterials = async () => {
@@ -30,29 +26,14 @@ export const getAllMaterials = async () => {
 };
 
 export const addMaterial = async (material: Material) => {
-    await addDoc(collection(db, 'materials'), {
-        name: material.name,
-        category: material.category,
-        totalAmount: material.totalAmount,
-        unit: material.unit,
-        unitCapacity: material.unitCapacity,
-        note: material.note,
-        unitPrice: material.unitPrice,
-    });
+    const { id, ...addData } = material;  // ID属性が余分なので外す
+    await addDoc(collection(db, 'materials'), addData);
 };
 
+/** Materialを更新登録するサービス。updataDataにID属性を入れないように注意！ */
 export const updateMaterial = async (id: string, updatedData: any) => {
     const materialRef = doc(db, 'materials', id);
-    // console.log(materialRef);
-    await updateDoc(materialRef, {
-        name: updatedData.name,
-        category: updatedData.category,
-        totalAmount: updatedData.totalAmount,
-        unit: updatedData.unit,
-        unitCapacity: updatedData.unitCapacity,
-        note: updatedData.note,
-        unitPrice: updatedData.unitPrice,
-    });
+    await updateDoc(materialRef, updatedData);
 };
 
 export const deleteMaterial = async (id: string) => {
