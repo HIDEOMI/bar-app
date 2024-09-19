@@ -1,5 +1,6 @@
 import { collection, getDocs, addDoc, updateDoc, doc, Timestamp, query, where } from "firebase/firestore";
 import { db } from '../firebase/firebaseConfig';
+import { Order } from "../types/types";
 
 
 /** 注文をFirestoreに保存する関数 */
@@ -27,13 +28,8 @@ export const getAllOrders = async () => {
         const data = doc.data();
         return {
             id: doc.id,
-            totalPrice: data.totalPrice,
-            products: data.products || [],
-            note: data.note || "",
-            status: data.status || "未処理",
-            createdAt: data.createdAt,
-            userId: data.userId,
-        };
+            ...data,
+        } as Order;
     });
 };
 
@@ -46,13 +42,8 @@ export const getOrdersByUserId = async (userId: string) => {
         const data = doc.data();
         return {
             id: doc.id,
-            totalPrice: data.totalPrice,
-            products: data.products || [],
-            note: data.note || "",
-            status: data.status || "未処理",
-            createdAt: data.createdAt,
-            userId: data.userId,
-        };
+            ...data,
+        } as Order;
     });
 };
 
@@ -69,13 +60,8 @@ export const getUnpaidOrdersByUserId = async (userId: string) => {
         const data = doc.data();
         return {
             id: doc.id,
-            totalPrice: data.totalPrice,
-            products: data.products || [],
-            note: data.note || "",
-            status: data.status || "未払い",
-            createdAt: data.createdAt,
-            userId: data.userId,
-        };
+            ...data,
+        } as Order;
     });
 };
 
