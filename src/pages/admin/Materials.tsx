@@ -68,7 +68,6 @@ const Materials: React.FC = () => {
     };
 
 
-
     /** 入力値が変更されたときに材料の情報を更新するハンドラ */
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, type, value } = e.target;

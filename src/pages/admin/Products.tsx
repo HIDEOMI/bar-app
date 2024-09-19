@@ -40,6 +40,7 @@ const Products: React.FC = () => {
         label: material.name,
     }));
 
+
     useEffect(() => {
         const fetchDatas = async () => {
             console.log("=== useEffect");
@@ -88,7 +89,6 @@ const Products: React.FC = () => {
         setIsEditing(false);  // 編集モードを解除
         setError(null);
     };
-
 
 
     /** 入力値が変更されたときに商品の情報を更新するハンドラ */
