@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { User } from "../types/types";
 import { onAuthStateChange } from "../services/auth";
-import { getUserById } from '../services/users';
+import { getUserDataById } from '../services/users';
 
 
 type AuthContextType = {
@@ -12,16 +13,16 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<any | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChange(async (user) => {
             if (user) {
-                const userInfo = await getUserById(user.uid);
-                setUser({ ...user, ...userInfo });
-                setIsAdmin(userInfo?.isAdmin || false);
+                const userData = await getUserDataById(user.uid);
+                setUser({ ...user, ...userData });
+                setIsAdmin(userData?.isAdmin || false);
             } else {
                 setUser(null);
                 setIsAdmin(false);
