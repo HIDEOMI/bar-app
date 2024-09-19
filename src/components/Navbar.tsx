@@ -55,7 +55,10 @@ const Navbar: React.FC = () => {
                     <Link to="/">メインメニュー</Link>
                 </li>
                 <li style={{ marginRight: '20px' }}>
-                    <Link to="/my_orders">注文確認</Link>
+                    <Link to="/my_orders">注文履歴</Link>
+                </li>
+                <li style={{ marginRight: '20px' }}>
+                    <Link to="/payment">支払い確認</Link>
                 </li>
                 <li>
                     <Link to="/admin">管理者ダッシュボード</Link>
