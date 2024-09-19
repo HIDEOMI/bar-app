@@ -13,23 +13,26 @@ export const getProductsByCategory = async (category: string) => {
     }
 
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
+    const products = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-    }) as Product);
+    }) as Product)
+    return products;
 };
 
 export const getAllProducts = async () => {
     return getProductsByCategory("All");
 };
 
-export const addProduct = async (product: any) => {
-    await addDoc(collection(db, 'products'), product);
+export const addProduct = async (product: Product) => {
+    const { id, ...addData } = product;  // ID属性が余分なので外す
+    await addDoc(collection(db, 'products'), addData);
 };
 
-export const updateProduct = async (id: string, updatedData: any) => {
-    const productRef = doc(db, 'products', id);
-    await updateDoc(productRef, updatedData);
+/** Productを更新登録するサービス。updataDataにID属性を入れないように注意！ */
+export const updateProduct = async (id: string, updateData: any) => {
+    const productRef = doc(db, 'products', id);  // ドキュメントIDを指定
+    await updateDoc(productRef, updateData);
 };
 
 export const deleteProduct = async (id: string) => {

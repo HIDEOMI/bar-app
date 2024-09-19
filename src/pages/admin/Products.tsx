@@ -57,10 +57,13 @@ const Products: React.FC = () => {
     /** 商品追加または編集する処理 */
     const handleSaveProduct = async () => {
         if (isEditing) {
-            await updateProduct(newProduct.id, { ...newProduct, materials: selectedMaterials });
+            const { id, ...updateData } = newProduct;
+            updateData.materials = selectedMaterials;
+            await updateProduct(id, updateData);
             showMessage('商品を更新しました');
         } else {
-            await addProduct({ ...newProduct, materials: selectedMaterials });
+            newProduct.materials = selectedMaterials;
+            await addProduct(newProduct);
             showMessage('商品を追加しました');
         }
 
@@ -109,7 +112,6 @@ const Products: React.FC = () => {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
         setNewProduct({ ...newProduct, [name]: type === "number" ? Number(value) : value });
-
     };
 
     /** セレクトが変更されたときに商品の情報を更新する処理 */
@@ -245,7 +247,7 @@ const Products: React.FC = () => {
                         {material.name} - 量:
                         <input
                             type="number"
-                            value={material.quantity}
+                            value={material.quantity || 0}
                             onChange={(e) => handleQuantityChange(index, Number(e.target.value))}  // 量を変更
                         />
                     </li>
@@ -266,7 +268,6 @@ const Products: React.FC = () => {
                         <p>アルコール度数: {product.alc}%</p>
                         <p>レシピ: {product.recipe}</p>
                         {/* <p>材料: {product.materials}</p> */}
-                        {/* <p>材料: {console.log(product.materials)}</p> */}
                         <p>在庫: {product.isAvailable ? 'あり' : 'なし'}</p>
                         <button onClick={() => handleEditProduct(product)}>編集</button>
                         <button onClick={() => handleDeleteProduct(product.id)}>削除</button>
