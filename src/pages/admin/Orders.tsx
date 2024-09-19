@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Order, CachedUser } from "../../types/types";
 import { getAllOrders, updateOrderStatus } from '../../services/orders';
-import { getUserById } from '../../services/users';
+import { getUserDataById } from '../../services/users';
 
 
 const CACHE_EXPIRATION_TIME = 10 * 60 * 1000;  // キャッシュの有効期限を10分（600000ミリ秒）に設定
@@ -59,7 +59,7 @@ const Orders: React.FC = () => {
                             userNameMap[order.userId] = cachedUser.displayName;
                         } else {
                             // 有効期限が切れている場合は再度Firestoreから取得
-                            const user = await getUserById(order.userId);
+                            const user = await getUserDataById(order.userId);
                             if (user) {
                                 const displayName = user.displayName || "不明なユーザー";
                                 const newCache = { ...userCache, [order.userId]: { displayName, timestamp: currentTime } };
@@ -69,7 +69,7 @@ const Orders: React.FC = () => {
                         }
                     } else {
                         // キャッシュに存在しない場合はFirestoreから取得
-                        const user = await getUserById(order.userId);
+                        const user = await getUserDataById(order.userId);
                         if (user) {
                             const displayName = user.displayName || "不明なユーザー";
                             const newCache = { ...userCache, [order.userId]: { displayName, timestamp: currentTime } };
