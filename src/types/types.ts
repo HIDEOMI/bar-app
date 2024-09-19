@@ -5,7 +5,7 @@ export type Product = {
     price: number;
     description: string;
     categories: string[];
-    base: string[];  // ベースになっているお酒
+    bases: string[];  // ベースになっているお酒
     color: string;
     alc: number;  // アルコール度数
     recipe: string;  // カクテルの作り方

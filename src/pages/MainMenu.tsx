@@ -21,7 +21,7 @@ const MainMenu: React.FC = () => {
 
 
     useEffect(() => {
-        const fetchProducts = async () => {
+        const fetchDatas = async () => {
             setLoading(true);
             try {
                 const productsData = await getProductsByCategory(category);
@@ -34,13 +34,13 @@ const MainMenu: React.FC = () => {
                 setMaterials(materialsData);
                 console.log(materialsData);
             } catch (error) {
-                console.error("Error fetching products: ", error);
+                console.error("Error fetching datas: ", error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchProducts();
+        fetchDatas();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [category]);  // category のみを依存配列に含める
 
@@ -137,7 +137,7 @@ const MainMenu: React.FC = () => {
             ) : (
                 <div>
                     {products.length === 0 ? (
-                        <p>商品がありません。</p>
+                        <p>該当する商品がありません。</p>
                     ) : (
                         <ul>
                             {products.map((product) => (

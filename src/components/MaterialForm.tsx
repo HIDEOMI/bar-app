@@ -71,7 +71,10 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ material, categories, onSav
 
     return (
         <div>
+            {/* <h2>{isEditing ? '材料編集' : '材料登録'}</h2> */}
+
             {error && <p style={{ color: 'red' }}>{error}</p>} {/* エラーメッセージを表示 */}
+
             <label >材料名: </label>
             <input
                 type="text"
