@@ -11,9 +11,6 @@ import MainMenu from './pages/MainMenu';
 import OrderHistory from "./pages/OrderHistory";
 import Payment from "./pages/Payment";
 import AdminDashboard from './pages/admin/AdminDashboard';
-// import Products from './pages/admin/Products';
-// import Materials from './pages/admin/Materials';
-// import Orders from './pages/admin/Orders';
 
 
 /** 認証が必要なコンポーネントをラップする */
@@ -25,6 +22,7 @@ const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return <>{children}</>;
 };
 
+/** Admin権限が必要なコンポーネントをラップする */
 const RequireAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user, isAdmin } = useAuth();
     if (!user || !isAdmin) {
@@ -53,6 +51,5 @@ const App: React.FC = () => {
         </AuthProvider>
     );
 };
-
 
 export default App;

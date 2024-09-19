@@ -159,7 +159,7 @@ const Products: React.FC = () => {
         const prices = selectedMaterials.map(selectedMaterialInProduct => {
             /** 材料リスト一覧の中でselectedMaterialInProductと同じもの */
             const selectedMaterial = allMaterials.find(m => m.id === selectedMaterialInProduct.id);
-            if (!selectedMaterialInProduct.isAvailable === false) {
+            if (selectedMaterial && (selectedMaterial.totalAmount <= 0)) {
                 formProduct.isAvailable = false;
             }
             return selectedMaterial ? Math.ceil(selectedMaterial.unitPrice * selectedMaterialInProduct.quantity / selectedMaterial.unitCapacity) : 0;
@@ -224,10 +224,10 @@ const Products: React.FC = () => {
             <h2>商品管理</h2>
 
             <h3>商品登録 / 編集</h3>
-            <div>
-                {message && <p style={{ color: 'red' }}>{message}</p>} {/* メッセージを表示 */}
-                {error && <p style={{ color: 'red' }}>{error}</p>} {/* エラーメッセージを表示 */}
+            {message && <p style={{ color: 'red' }}>{message}</p>} {/* メッセージを表示 */}
+            {error && <p style={{ color: 'red' }}>{error}</p>} {/* エラーメッセージを表示 */}
 
+            <div>
                 <label>商品名: </label>
                 <input
                     type="text"
@@ -342,7 +342,7 @@ const Products: React.FC = () => {
 
             <h3>商品リスト</h3>
             <div>
-                {/* カテゴリフィルタのプルダウン */}
+                <label>カテゴリ選択: </label>
                 <select value={selectedCategory} onChange={handleCategoryChange}>
                     {baseCategories.map((category) => (
                         <option key={category} value={category}>

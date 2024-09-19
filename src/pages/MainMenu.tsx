@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Product, CartItem, Material } from "../types/types";
-import { getProductsByCategory } from "../services/products";
+import { getAllProducts } from '../services/products';
 import { createOrder } from "../services/orders";
 import { getAllMaterials, updateMaterial } from "../services/materials";
 import { useAuth } from "../components/AuthProvider";
@@ -10,48 +10,60 @@ import { useAuth } from "../components/AuthProvider";
 const MainMenu: React.FC = () => {
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
-    const [products, setProducts] = useState<Product[]>([]);
-    const [materials, setMaterials] = useState<any[]>([]);
-    const [category, setCategory] = useState("all");
+    const [message, setMessage] = useState<string | null>(null);  // メッセージを管理
+    const [error, setError] = useState<string | null>(null);  // エラーメッセージの状態
+    const [allProducts, setAllProducts] = useState<Product[]>([]);
+    const [allMaterials, setAllMaterials] = useState<Material[]>([]);
+    const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<string>('All');  // 選択されたカテゴリ
     const [cart, setCart] = useState<CartItem[]>([]);
     const [totalPrice, setTotalPrice] = useState(0);
     const [note, setNote] = useState("");  // 備考欄
     const [isSubmitting, setIsSubmitting] = useState(false);  // 注文送信中の状態
-    const [orderSuccess, setOrderSuccess] = useState(false);  // 注文成功のフラグ
+
+    const baseCategories = ['All', 'ウイスキー', 'ジン', 'ウォッカ', 'ラム'];  // カテゴリの選択肢  
 
 
     useEffect(() => {
         const fetchDatas = async () => {
             setLoading(true);
             try {
-                const productsData = await getProductsByCategory(category);
-                console.log("取得した商品:", productsData);
-                const mappedProducts: Product[] = productsData.map((product: Product) => ({
-                    ...product,
-                }));
-                setProducts(mappedProducts);
-                const materialsData = await getAllMaterials();
-                setMaterials(materialsData);
-                console.log(materialsData);
+                const allProductsData = await getAllProducts();
+                const allMaterialsData = await getAllMaterials();
+                setAllProducts(allProductsData);
+                setAllMaterials(allMaterialsData);
+                setFilteredProducts(allProductsData);  // 初期値としてすべての材料を表示
             } catch (error) {
                 console.error("Error fetching datas: ", error);
             } finally {
                 setLoading(false);
             }
         };
-
         fetchDatas();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [category]);  // category のみを依存配列に含める
+    }, []);  // category のみを依存配列に含める
 
-    const isProductAvailable = (product: Product) => {
-        return product.materials.every((materialId) => {
-            const material = materials.find((m) => m.id === materialId);
-            return material && material.quantity > 0;
-        });
+    /** メッセージを一定時間表示した後に非表示にする処理 */
+    const showMessage = (msg: string) => {
+        setMessage(msg);
+        setTimeout(() => {
+            setMessage(null);
+        }, 2000);  // 2秒後にメッセージを非表示
     };
 
-    /** 商品をカートに追加する関数 */
+    /** カテゴリフィルタの変更ハンドラ */
+    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const category = e.target.value;
+        setSelectedCategory(category);
+
+        if (category === 'All') {
+            setFilteredProducts(allProducts);  // "All" を選んだ場合はすべての商品を表示
+        } else {
+            const filtered = allProducts.filter((product) => product.bases.includes(category));
+            setFilteredProducts(filtered);  // 選択したカテゴリの材料だけを表示
+        }
+    };
+
+    /** 商品をカートに追加するハンドラ */
     const handleAddToCart = (product: Product) => {
         const existingItem = cart.find(item => item.product.id === product.id);
         if (existingItem) {
@@ -68,15 +80,15 @@ const MainMenu: React.FC = () => {
         setTotalPrice(totalPrice + product.price);
     };
 
-    /** 注文を確定してFirestoreに保存する関数 */
+    /** 注文を確定してFirestoreに保存するハンドラ */
     const handleOrderSubmit = async () => {
         if (!user) {
             console.error("ログインしてください");
+            setError("ログインしてください")
             return;
         }
 
         setIsSubmitting(true);  // 注文送信中にする
-        setOrderSuccess(false);  // メッセージをリセット
 
         const orderItems = cart.map(item => ({
             productId: item.product.id,
@@ -87,26 +99,22 @@ const MainMenu: React.FC = () => {
 
         try {
             const orderId = await createOrder(user.uid, orderItems, totalPrice, note);
-            console.log("注文が確定しました！注文ID:", orderId);
-            setOrderSuccess(true);  // 注文成功
 
             // 使用した材料の在庫を減らす
             for (const item of cart) {
                 const product = item.product;
                 for (const materialInProduct of product.materials) {
                     const materialId = materialInProduct.id;
-                    const material: Material = materials.find((m) => m.id === materialId);
-                    const remainingTotalAmount = material.totalAmount - (materialInProduct.quantity / material.unitCapacity);
+                    const material = allMaterials.find((m) => m.id === materialId);
+                    const remainingTotalAmount = material && (material.totalAmount - item.quantity * materialInProduct.quantity / material.unitCapacity);
                     if (material) {
                         await updateMaterial(materialId, { totalAmount: remainingTotalAmount });
                     }
                 }
             }
 
-            // 2秒後にメッセージを非表示にする
-            setTimeout(() => {
-                setOrderSuccess(false);
-            }, 2000);
+            console.log("注文が確定しました！ 注文ID:", orderId);
+            showMessage("注文が確定しました！");
 
             // 注文が確定した後、カートをリセット
             setCart([]);
@@ -117,59 +125,73 @@ const MainMenu: React.FC = () => {
         } finally {
             setIsSubmitting(false);  // 送信終了
         }
+
     };
 
 
     return (
         <div>
             <h1>メインメニュー</h1>
+
+            <h2>商品を探す</h2>
+
+            <h3>商品リスト</h3>
             <div>
                 <label>カテゴリ選択: </label>
-                <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                    <option value="all">すべて</option>
-                    <option value="drinks">ドリンク</option>
-                    <option value="food">フード</option>
+                <select value={selectedCategory} onChange={handleCategoryChange}>
+                    {baseCategories.map((category) => (
+                        <option key={category} value={category}>
+                            {category}
+                        </option>
+                    ))}
                 </select>
+
+                {loading ? (
+                    <p>読み込み中...</p>
+                ) : (
+                    <div>
+                        {filteredProducts.length === 0 ? (
+                            <p>該当する商品がありません。</p>
+                        ) : (
+                            <ul>
+                                {filteredProducts.map((product) => (
+                                    <li key={product.id}>
+                                        <img src={product.imageUrl} alt={product.name} width="100" />
+                                        <h3>{product.name}</h3>
+                                        <p>{product.description}</p>
+                                        <p>価格: ¥{product.price}</p>
+                                        <p>在庫: {product.isAvailable ? "在庫あり" : "売り切れ"}</p>
+                                        {product.isAvailable && (
+                                            <button onClick={() => handleAddToCart(product)}>
+                                                カートに追加
+                                            </button>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                )}
             </div>
 
-            {loading ? (
-                <p>読み込み中...</p>
-            ) : (
+            <h2>カートの中身</h2>
+            <div>
+                {message && <p style={{ color: 'red' }}>{message}</p>} {/* メッセージを表示 */}
+                {error && <p style={{ color: 'red' }}>{error}</p>} {/* エラーメッセージを表示 */}
+
+                <ul>
+                    {cart.map(item => (
+                        <li key={item.product.id}>
+                            {item.product.name} - 数量: {item.quantity}
+                        </li>
+                    ))}
+                </ul>
+                <p>合計金額: ¥{totalPrice}</p>
+
+                <label>備考: </label>
+                <textarea value={note} onChange={(e) => setNote(e.target.value)} />
+
                 <div>
-                    {products.length === 0 ? (
-                        <p>該当する商品がありません。</p>
-                    ) : (
-                        <ul>
-                            {products.map((product) => (
-                                <li key={product.id}>
-                                    <img src={product.imageUrl} alt={product.name} width="100" />
-                                    <h3>{product.name}</h3>
-                                    <p>{product.description}</p>
-                                    <p>価格: ¥{product.price}</p>
-                                    <p>在庫: {isProductAvailable(product) ? "在庫あり" : "売り切れ"}</p>
-                                    {isProductAvailable(product) && (
-                                        <button onClick={() => handleAddToCart(product)}>
-                                            カートに追加
-                                        </button>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-
-                    <h2>カートの中身</h2>
-                    <ul>
-                        {cart.map(item => (
-                            <li key={item.product.id}>
-                                {item.product.name} - 数量: {item.quantity}
-                            </li>
-                        ))}
-                    </ul>
-                    <p>合計金額: ¥{totalPrice}</p>
-
-                    <label>備考: </label>
-                    <textarea value={note} onChange={(e) => setNote(e.target.value)} />
-
                     {/* 注文確定ボタン */}
                     <button onClick={handleOrderSubmit} disabled={cart.length === 0 || isSubmitting}>
                         {isSubmitting ? "注文を送信中..." : "注文を確定"}
@@ -177,12 +199,11 @@ const MainMenu: React.FC = () => {
                     <Link to="/payment">
                         <button>支払いページへ</button>
                     </Link>
-                    {/* 注文成功メッセージ - 2秒後に自動的に消える */}
-                    {orderSuccess && <p>注文が完了しました！</p>}
-                    {/* 支払いページへのリンク */}
                 </div>
-            )}
+
+            </div>
         </div>
+
     );
 };
 

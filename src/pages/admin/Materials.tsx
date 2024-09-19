@@ -170,10 +170,10 @@ const Materials: React.FC = () => {
             <h2>材料管理</h2>
 
             <h3>材料登録 / 編集</h3>
-            <div>
-                {message && <p style={{ color: 'red' }}>{message}</p>} {/* メッセージを表示 */}
-                {error && <p style={{ color: 'red' }}>{error}</p>} {/* エラーメッセージを表示 */}
+            {message && <p style={{ color: 'red' }}>{message}</p>} {/* メッセージを表示 */}
+            {error && <p style={{ color: 'red' }}>{error}</p>} {/* エラーメッセージを表示 */}
 
+            <div>
                 <label >材料名: </label>
                 <input
                     type="text"
@@ -233,8 +233,13 @@ const Materials: React.FC = () => {
                 />
                 <br />
                 <label >備考: </label>
+                {/* <textarea
+                    name="note"
+                    value={formMaterial.note}
+                    // onChange={handleChange}
+                /> */}
                 <input
-                    type="text"
+                    type="textarea"
                     name="note"
                     placeholder="備考"
                     value={formMaterial.note}
@@ -249,7 +254,7 @@ const Materials: React.FC = () => {
 
             <h3>材料リスト </h3>
             <div>
-                {/* カテゴリフィルタのプルダウン */}
+                <label>カテゴリ選択: </label>
                 <select value={selectedCategory} onChange={handleCategoryChange}>
                     {filterCategories.map((category) => (
                         <option key={category} value={category}>
