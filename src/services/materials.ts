@@ -5,6 +5,7 @@ import { Material } from "../types/types"
 
 /** 指定したカテゴリの商品リストを取得する関数 */
 export const getMaterialsByCategory = async (category: string) => {
+    console.log("=== リクエスト：getMaterialsByCategory() ===");
     let q;
     if (category === "All") {
         q = collection(db, "materials");

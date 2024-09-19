@@ -10,8 +10,8 @@ const Products: React.FC = () => {
     const [isEditing, setIsEditing] = useState<boolean>(false);  // 編集モードかどうかを管理
     const [message, setMessage] = useState<string | null>(null);  // メッセージを管理
     const [error, setError] = useState<string | null>(null);  // エラーメッセージの状態
-    const [products, setProducts] = useState<Product[]>([]);
-    const [materials, setMaterials] = useState<Material[]>([]);
+    const [allProducts, setAllProducts] = useState<Product[]>([]);
+    const [allMaterials, setAllMaterials] = useState<Material[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>('All');  // 選択されたカテゴリ
     const [selectedMaterials, setSelectedMaterials] = useState<MaterialInProduct[]>([]);
@@ -35,20 +35,21 @@ const Products: React.FC = () => {
     const baseCategories = ['All', 'ウイスキー', 'ジン', 'ウォッカ', 'ラム'];  // カテゴリの選択肢  
 
     /** react-select 用の材料オプション */
-    const materialOptions = materials.map(material => ({
+    const materialOptions = allMaterials.map(material => ({
         value: material.id,
         label: material.name,
     }));
 
     useEffect(() => {
         const fetchDatas = async () => {
+            console.log("=== useEffect");
             setLoading(true);
             try {
-                const productsData = await getAllProducts();
-                const materialsData = await getAllMaterials();
-                setProducts(productsData);
-                setMaterials(materialsData);
-                setFilteredProducts(productsData);  // 初期値としてすべての材料を表示
+                const allProductsData = await getAllProducts();
+                const allMaterialsData = await getAllMaterials();
+                setAllProducts(allProductsData);
+                setAllMaterials(allMaterialsData);
+                setFilteredProducts(allProductsData);  // 初期値としてすべての材料を表示
             } catch (error) {
                 console.error("Error fetching datas: ", error);
             } finally {
@@ -65,93 +66,6 @@ const Products: React.FC = () => {
         setTimeout(() => {
             setMessage(null);
         }, 2000);  // 2秒後にメッセージを非表示
-    };
-
-    /** カテゴリフィルタの変更ハンドラ */
-    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const category = e.target.value;
-        setSelectedCategory(category);
-
-        if (category === 'All') {
-            setFilteredProducts(products);  // "All" を選んだ場合はすべての商品を表示
-        } else {
-            const filtered = products.filter((product) => product.bases.includes(category));
-            setFilteredProducts(filtered);  // 選択したカテゴリの材料だけを表示
-        }
-        console.log(filteredProducts);
-    };
-
-
-    /** 商品追加または編集する処理 */
-    const handleSaveProduct = async () => {
-        // バリデーション: 商品名が空欄
-        if (formProduct.name.trim() === '') {
-            setError('商品名を入力してください。');
-            return;
-        }
-
-        // バリデーション: 商品名が重複しているか
-        const isDuplicate = products.some(
-            (mat) => mat.name === formProduct.name && mat.id !== formProduct.id
-        );
-        if (isDuplicate) {
-            setError('この材料名はすでに存在します。');
-            return;
-        }
-
-        // バリデーション: 色が空欄
-        if (formProduct.color.trim() === '') {
-            setError('色を入力してください。');
-            return;
-        }
-
-        // バリデーション: ノンアルじゃないのにアルコールが0
-        if (formProduct.alc === 0) {
-            setError('アルコール度数を入力してください。');
-            return;
-        }
-
-        formProduct.isAvailable = true;
-        // 商品の価格を計算する
-        const prices = selectedMaterials.map(selectedMaterialInProduct => {
-            /** 材料リスト一覧の中でselectedMaterialInProductと同じもの */
-            const selectedMaterial = materials.find(m => m.id === selectedMaterialInProduct.id);
-            if (!selectedMaterialInProduct.isAvailable === false) {
-                formProduct.isAvailable = false;
-            }
-            return selectedMaterial ? Math.ceil(selectedMaterial.unitPrice * selectedMaterialInProduct.quantity / selectedMaterial.unitCapacity) : 0;
-        });
-        formProduct.price = 50 + prices.reduce((sum, element) => sum + element, 0);
-
-        if (isEditing) {
-            const { id, ...updateData } = formProduct;
-            updateData.materials = selectedMaterials;
-            await updateProduct(id, updateData);
-            showMessage('商品を更新しました');
-        } else {
-            formProduct.materials = selectedMaterials;
-            await addProduct(formProduct);
-            showMessage('商品を追加しました');
-        }
-
-        resetForm();
-        const productsData = await getAllProducts();
-        setProducts(productsData);
-    };
-
-    /** 商品を編集する処理 */
-    const handleEditProduct = (product: Product) => {
-        setFormProduct(product);  // 編集モードで既存商品をセット
-        setSelectedMaterials(product.materials);
-        setIsEditing(true);
-    };
-
-    /** 商品を削除する処理 */
-    const handleDeleteProduct = async (id: string) => {
-        await deleteProduct(id);
-        showMessage('商品を削除しました');
-        const productsData = await getAllProducts();
-        setProducts(productsData);
     };
 
     /** フォームのリセット処理 */
@@ -175,23 +89,25 @@ const Products: React.FC = () => {
         setError(null);
     };
 
-    /** 入力値が変更されたときに商品の情報を更新する処理 */
+
+
+    /** 入力値が変更されたときに商品の情報を更新するハンドラ */
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
         setFormProduct({ ...formProduct, [name]: type === "number" ? Number(value) : value });
     };
 
-    /** セレクトが変更されたときに商品の情報を更新する処理 */
+    /** セレクトが変更されたときに商品の情報を更新するハンドラ */
     const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { name, options } = e.target;
         const selectedValues = Array.from(options).filter(option => option.selected).map(option => option.value);
         setFormProduct({ ...formProduct, [name]: selectedValues });
     };
 
-    /** 商品の材料リストを追加する処理 */
+    /** 商品の材料リストを追加するハンドラ */
     const handleSelectMaterial = (selectedOptions: any) => {
         const selected = selectedOptions.map((option: any) => {
-            const material = materials.find(m => m.id === option.value);
+            const material = allMaterials.find(m => m.id === option.value);
             const quantity = selectedMaterials.find(m => m.id === option.value)?.quantity;
             return material ? {
                 id: material.id,
@@ -203,12 +119,106 @@ const Products: React.FC = () => {
         setSelectedMaterials(selected);
     };
 
-    /** 材料の量を動的に変更する処理 */
+    /** 材料の量を動的に変更するハンドラ */
     const handleQuantityChange = (index: number, newQuantity: number) => {
         const updatedMaterials = [...selectedMaterials];
         updatedMaterials[index].quantity = newQuantity;
         setSelectedMaterials(updatedMaterials);
     };
+
+    /** 商品追加または編集するハンドラ */
+    const handleSubmit = async () => {
+        // バリデーション: 商品名が空欄
+        if (formProduct.name.trim() === '') {
+            setError('商品名を入力してください。');
+            return;
+        }
+
+        // バリデーション: 商品名が重複しているか
+        const isDuplicate = allProducts.some(
+            (mat) => mat.name === formProduct.name && mat.id !== formProduct.id
+        );
+        if (isDuplicate) {
+            setError('この材料名はすでに存在します。');
+            return;
+        }
+
+        // バリデーション: 色が空欄
+        if (formProduct.color.trim() === '') {
+            setError('色を入力してください。');
+            return;
+        }
+
+        // バリデーション: ノンアルじゃないのにアルコールが0
+        if (formProduct.alc === 0) {
+            setError('アルコール度数を入力してください。');
+            return;
+        }
+
+        formProduct.isAvailable = true;
+        // 商品の価格を計算する
+        const prices = selectedMaterials.map(selectedMaterialInProduct => {
+            /** 材料リスト一覧の中でselectedMaterialInProductと同じもの */
+            const selectedMaterial = allMaterials.find(m => m.id === selectedMaterialInProduct.id);
+            if (!selectedMaterialInProduct.isAvailable === false) {
+                formProduct.isAvailable = false;
+            }
+            return selectedMaterial ? Math.ceil(selectedMaterial.unitPrice * selectedMaterialInProduct.quantity / selectedMaterial.unitCapacity) : 0;
+        });
+        formProduct.price = 50 + prices.reduce((sum, element) => sum + element, 0);
+
+        if (isEditing) {
+            const { id, ...updateData } = formProduct;
+            updateData.materials = selectedMaterials;
+            await updateProduct(id, updateData);
+            showMessage('商品を更新しました');
+        } else {
+            formProduct.materials = selectedMaterials;
+            await addProduct(formProduct);
+            showMessage('商品を追加しました');
+        }
+
+        resetForm();
+        const allProductsData = await getAllProducts();
+        setAllProducts(allProductsData);
+        setFilteredProducts(allProductsData);
+    };
+
+    /** キャンセルボタンを押したときのハンドラ */
+    const handleCancel = () => {
+        resetForm();
+        setMessage('キャンセルしました。');
+    };
+
+    /** カテゴリフィルタの変更ハンドラ */
+    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const category = e.target.value;
+        setSelectedCategory(category);
+
+        if (category === 'All') {
+            setFilteredProducts(allProducts);  // "All" を選んだ場合はすべての商品を表示
+        } else {
+            const filtered = allProducts.filter((product) => product.bases.includes(category));
+            setFilteredProducts(filtered);  // 選択したカテゴリの材料だけを表示
+        }
+    };
+
+    /** 商品を編集するハンドラ */
+    const handleEditProduct = (product: Product) => {
+        setFormProduct(product);  // 編集モードで既存データをセット
+        setSelectedMaterials(product.materials);
+        setIsEditing(true);
+    };
+
+    /** 商品を削除するハンドラ */
+    const handleDeleteProduct = async (id: string) => {
+        await deleteProduct(id);
+        showMessage('商品を削除しました');
+        const data = await getAllProducts();
+        setAllProducts(data);
+        setFilteredProducts(data);
+    };
+
 
     return (
         <div>
@@ -326,8 +336,8 @@ const Products: React.FC = () => {
                     ))}
                 </ul>
 
-                <button onClick={handleSaveProduct}>{isEditing ? '商品を更新' : '商品を追加'}</button>
-                <button onClick={resetForm}>キャンセル</button>
+                <button onClick={handleSubmit}>{isEditing ? '商品を更新' : '商品を追加'}</button>
+                <button onClick={handleCancel}>キャンセル</button>
 
             </div>
 
@@ -358,7 +368,7 @@ const Products: React.FC = () => {
                                         <p>色: {product.color}</p>
                                         <p>アルコール度数: {product.alc}%</p>
                                         <p>レシピ: {product.recipe}</p>
-                                        {/* <p>材料: {product.materials}</p> */}
+                                        <p>材料: {product.materials.map(m => m.name).join(', ')}</p>
                                         <p>在庫: {product.isAvailable ? 'あり' : 'なし'}</p>
                                         <button onClick={() => handleEditProduct(product)}>編集</button>
                                         <button onClick={() => handleDeleteProduct(product.id)}>削除</button>

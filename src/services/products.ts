@@ -5,6 +5,7 @@ import { Product } from "../types/types";
 
 /** 指定したカテゴリの商品リストを取得する関数 */
 export const getProductsByCategory = async (category: string) => {
+    console.log("=== リクエスト：getProductsByCategory() ===");
     let q;
     if (category === "All") {
         q = collection(db, "products");
