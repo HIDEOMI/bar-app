@@ -69,7 +69,7 @@ const Payment: React.FC = () => {
 
     return (
         <div>
-            <h1>未払いの合計金額: ¥{totalUnpaid}</h1>
+            <h1>支払い合計金額: ¥{totalUnpaid}</h1>
             {loading ? (
                 <p>読み込み中...</p>
             ) : unpaidOrders.length === 0 ? (
@@ -81,8 +81,7 @@ const Payment: React.FC = () => {
                         {unpaidOrders.map(order => (
                             <li key={order.id}>
                                 <h3>注文日時: {order.createdAt.toDate().toLocaleString()}</h3>
-                                <p>合計金額: ¥{order.totalPrice}</p>
-                                <p>備考: {order.note}</p>
+                                <p>小計金額: ¥{order.totalPrice}</p>
                                 <p>注文内容: </p>
                                 <ul>
                                     {order.products.map(product => (
@@ -91,9 +90,11 @@ const Payment: React.FC = () => {
                                         </li>
                                     ))}
                                 </ul>
+                                <p>備考: {order.note}</p>
                             </li>
                         ))}
                     </ul>
+                    <p>支払い合計金額: ¥{totalUnpaid}</p>
                     <button onClick={handlePayment}>支払いを完了する</button>
                 </div>
             )}

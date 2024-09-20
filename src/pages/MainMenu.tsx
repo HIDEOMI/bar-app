@@ -156,11 +156,11 @@ const MainMenu: React.FC = () => {
                             <ul>
                                 {filteredProducts.map((product) => (
                                     <li key={product.id}>
-                                        <img src={product.imageUrl} alt={product.name} width="100" />
-                                        <h3>{product.name}</h3>
-                                        <p>{product.description}</p>
-                                        <p>価格: ¥{product.price}</p>
-                                        <p>在庫: {product.isAvailable ? "在庫あり" : "売り切れ"}</p>
+                                        <img src={product.imageUrl} alt="画像募集中！" width="100" />
+                                        <p>{product.name}</p>
+                                        {product.description} <br />
+                                        値段: ¥ {product.price.toLocaleString()} <br />
+                                        在庫: {product.isAvailable ? "在庫あり" : "売り切れ"} <br />
                                         {product.isAvailable && (
                                             <button onClick={() => handleAddToCart(product)}>
                                                 カートに追加

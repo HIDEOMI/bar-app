@@ -252,7 +252,7 @@ const Materials: React.FC = () => {
 
             </div>
 
-            <h3>材料リスト </h3>
+            <h2>材料リスト </h2>
             <div>
                 <label>カテゴリ選択: </label>
                 <select value={selectedCategory} onChange={handleCategoryChange}>
@@ -273,8 +273,11 @@ const Materials: React.FC = () => {
                             <ul>
                                 {filteredMaterials.map((material) => (
                                     <li key={material.id}>
-                                        {material.name} - {material.totalAmount} {material.unit}:{material.unitCapacity} ({material.category}) <br />
-                                        ￥: {material.unitPrice} <br />
+                                        <h4>{material.name}</h4>
+                                        在庫: {material.totalAmount.toLocaleString()} {material.unit} <br />
+                                        容量: {material.unitCapacity.toLocaleString()} (ml) <br />
+                                        カテゴリ: {material.category} <br />
+                                        ￥: {material.unitPrice.toLocaleString()} <br />
                                         備考: {material.note} <br />
                                         <button onClick={() => handleEditMaterial(material)}>編集</button>
                                         <button onClick={() => handleDeleteMaterial(material.id)}>削除</button>

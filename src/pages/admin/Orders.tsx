@@ -144,6 +144,7 @@ const Orders: React.FC = () => {
                                     <p>備考: {order.note}</p>
                                     <p>合計金額: ¥{order.totalPrice}</p>
                                     <p>現在の状態: {order.status}</p>
+                                    <button onClick={() => handleStatusChange(order.id, "未処理")}>未処理にする</button>
                                     <button onClick={() => handleStatusChange(order.id, "未払い")}>提供済み</button>
                                     <button onClick={() => handleStatusChange(order.id, "完了")}>完了にする</button>
                                 </li>
