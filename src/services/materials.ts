@@ -1,4 +1,4 @@
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, orderBy } from "firebase/firestore";
 import { db } from '../firebase/firebaseConfig';
 import { Material } from "../types/types"
 
@@ -8,9 +8,15 @@ export const getMaterialsByCategory = async (category: string) => {
     console.log("=== リクエスト：getMaterialsByCategory() ===");
     let q;
     if (category === "All") {
-        q = collection(db, "materials");
+        q = query(collection(db, "materials"),
+            orderBy('category', 'asc'),
+            orderBy('name', 'asc')
+        );
     } else {
-        q = query(collection(db, "materials"), where("category", "==", category));
+        q = query(collection(db, "materials"),
+            where("category", "==", category),
+            orderBy('name', 'asc')
+        );
     }
 
     const querySnapshot = await getDocs(q);

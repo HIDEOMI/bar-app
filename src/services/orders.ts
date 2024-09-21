@@ -62,7 +62,7 @@ export const getUnpaidOrdersByUserId = async (userId: string) => {
         collection(db, "orders"),
         where("userId", "==", userId),
         where("status", "==", "未払い"),
-        // orderBy('createdAt', 'asc')
+        orderBy('createdAt', 'asc')
     );
     const querySnapshot = await getDocs(q);
 
