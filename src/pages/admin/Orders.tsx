@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Order, CachedUser } from "../../types/types";
 import { getAllOrders, updateOrderStatus } from '../../services/orders';
-import { getUserById } from '../../services/users';
+import { getUserDataById } from '../../services/users';
 
 
 const CACHE_EXPIRATION_TIME = 10 * 60 * 1000;  // キャッシュの有効期限を10分（600000ミリ秒）に設定
@@ -38,7 +38,7 @@ const Orders: React.FC = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [userNames, setUserNames] = useState<{ [key: string]: string }>({}); // userId に対する displayName
     const [userCache, setUserCache] = useState<{ [key: string]: CachedUser }>(loadCacheFromLocalStorage()); // ローカルストレージからキャッシュを読み込む
-    const [selectedStatus, setSelectedStatus] = useState<string>("全て");  // デフォルトは全て
+    const [selectedStatus, setSelectedStatus] = useState<string>("未処理");  // デフォルトは全て
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -59,7 +59,7 @@ const Orders: React.FC = () => {
                             userNameMap[order.userId] = cachedUser.displayName;
                         } else {
                             // 有効期限が切れている場合は再度Firestoreから取得
-                            const user = await getUserById(order.userId);
+                            const user = await getUserDataById(order.userId);
                             if (user) {
                                 const displayName = user.displayName || "不明なユーザー";
                                 const newCache = { ...userCache, [order.userId]: { displayName, timestamp: currentTime } };
@@ -69,7 +69,7 @@ const Orders: React.FC = () => {
                         }
                     } else {
                         // キャッシュに存在しない場合はFirestoreから取得
-                        const user = await getUserById(order.userId);
+                        const user = await getUserDataById(order.userId);
                         if (user) {
                             const displayName = user.displayName || "不明なユーザー";
                             const newCache = { ...userCache, [order.userId]: { displayName, timestamp: currentTime } };
@@ -117,7 +117,6 @@ const Orders: React.FC = () => {
             <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
                 <option value="全て">全て</option>
                 <option value="未処理">未処理</option>
-                <option value="処理中">処理中</option>
                 <option value="未払い">未払い</option>
                 <option value="完了">完了</option>
             </select>
@@ -132,11 +131,9 @@ const Orders: React.FC = () => {
                         <ul>
                             {filteredOrders.map(order => (
                                 <li key={order.id}>
-                                    <h3>注文ID: {order.id}</h3>
+                                    {/* <h3>注文ID: {order.id}</h3> */}
+                                    <h3>注文日時: {order.createdAt.toDate().toLocaleString()}</h3>
                                     <p>ユーザー: {userNames[order.userId] || "不明なユーザー"}</p> {/* displayNameを表示 */}
-                                    <p>合計金額: ¥{order.totalPrice}</p>
-                                    <p>備考: {order.note}</p>
-                                    <p>注文日時: {order.createdAt.toDate().toLocaleString()}</p>
                                     <ul>
                                         {order.products.map(product => (
                                             <li key={product.productId}>
@@ -144,9 +141,11 @@ const Orders: React.FC = () => {
                                             </li>
                                         ))}
                                     </ul>
+                                    <p>備考: {order.note}</p>
+                                    <p>合計金額: ¥{order.totalPrice}</p>
                                     <p>現在の状態: {order.status}</p>
-                                    <button onClick={() => handleStatusChange(order.id, "処理中")}>処理中にする</button>
-                                    <button onClick={() => handleStatusChange(order.id, "未払い")}>未払いにする</button>
+                                    <button onClick={() => handleStatusChange(order.id, "未処理")}>未処理にする</button>
+                                    <button onClick={() => handleStatusChange(order.id, "未払い")}>提供済み</button>
                                     <button onClick={() => handleStatusChange(order.id, "完了")}>完了にする</button>
                                 </li>
                             ))}

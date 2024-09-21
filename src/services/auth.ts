@@ -1,4 +1,4 @@
-import {signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, provider, db } from '../firebase/firebaseConfig';
 

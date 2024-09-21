@@ -320,8 +320,8 @@ const Products: React.FC = () => {
                     onChange={handleSelectMaterial}  // 選択変更時の処理
                 />
 
-                {/* 追加された材料のリスト */}
-                <h3>追加された材料</h3>
+                {/* 使用する材料のリスト */}
+                <h4>使用する材料</h4>
                 <ul>
                     {selectedMaterials.map((material, index) => (
                         <li key={material.id}>
@@ -340,7 +340,7 @@ const Products: React.FC = () => {
 
             </div>
 
-            <h3>商品リスト</h3>
+            <h2>商品リスト</h2>
             <div>
                 <label>カテゴリ選択: </label>
                 <select value={selectedCategory} onChange={handleCategoryChange}>
@@ -361,14 +361,15 @@ const Products: React.FC = () => {
                             <ul>
                                 {filteredProducts.map(product => (
                                     <li key={product.id}>
-                                        {product.name} - ¥{product.price}
-                                        <p>カテゴリ: {product.categories.join(', ')}</p>
-                                        <p>ベース: {product.bases.join(', ')}</p>
-                                        <p>色: {product.color}</p>
-                                        <p>アルコール度数: {product.alc}%</p>
-                                        <p>レシピ: {product.recipe}</p>
-                                        <p>材料: {product.materials.map(m => m.name).join(', ')}</p>
-                                        <p>在庫: {product.isAvailable ? 'あり' : 'なし'}</p>
+                                        <h4>{product.name}</h4>
+                                        値段: ¥ {product.price.toLocaleString()} <br />
+                                        カテゴリ: {product.categories.join(', ')} <br />
+                                        ベース: {product.bases.join(', ')} <br />
+                                        アルコール度数: {product.alc}% <br />
+                                        色: {product.color} <br />
+                                        材料: {product.materials.map(m => m.name).join(', ')} <br />
+                                        在庫: {product.isAvailable ? 'あり' : 'なし'} <br />
+                                        レシピ: {product.recipe} <br />
                                         <button onClick={() => handleEditProduct(product)}>編集</button>
                                         <button onClick={() => handleDeleteProduct(product.id)}>削除</button>
                                     </li>

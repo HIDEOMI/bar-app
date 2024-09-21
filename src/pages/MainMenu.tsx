@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Product, CartItem, Material } from "../types/types";
-import { getAllProducts } from '../services/products';
+import { getAllProducts, getProductsByPage } from '../services/products';
 import { createOrder } from "../services/orders";
 import { getAllMaterials, updateMaterial } from "../services/materials";
 import { useAuth } from "../components/AuthProvider";
@@ -12,9 +12,12 @@ const MainMenu: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<string | null>(null);  // メッセージを管理
     const [error, setError] = useState<string | null>(null);  // エラーメッセージの状態
+    const [products, setProducts] = useState<Product[]>([]);
     const [allProducts, setAllProducts] = useState<Product[]>([]);
     const [allMaterials, setAllMaterials] = useState<Material[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+    const [lastVisible, setLastVisible] = useState<any>(null);  // ページネーションのための最後のドキュメント
+    const [prevPages, setPrevPages] = useState<any[]>([]);  // 戻るためのドキュメントスタック  
     const [selectedCategory, setSelectedCategory] = useState<string>('All');  // 選択されたカテゴリ
     const [cart, setCart] = useState<CartItem[]>([]);
     const [totalPrice, setTotalPrice] = useState(0);
@@ -28,11 +31,15 @@ const MainMenu: React.FC = () => {
         const fetchDatas = async () => {
             setLoading(true);
             try {
-                const allProductsData = await getAllProducts();
+                const { products, lastVisible } = await getProductsByPage();
+                setProducts(products);
+                setLastVisible(lastVisible);
+
+                // const allProductsData = await getAllProducts();
                 const allMaterialsData = await getAllMaterials();
-                setAllProducts(allProductsData);
+                // setAllProducts(allProductsData);
                 setAllMaterials(allMaterialsData);
-                setFilteredProducts(allProductsData);  // 初期値としてすべての材料を表示
+                // setFilteredProducts(allProductsData);  // 初期値としてすべての材料を表示
             } catch (error) {
                 console.error("Error fetching datas: ", error);
             } finally {
@@ -48,6 +55,26 @@ const MainMenu: React.FC = () => {
         setTimeout(() => {
             setMessage(null);
         }, 2000);  // 2秒後にメッセージを非表示
+    };
+
+    /** 次のページを取得 */
+    const fetchNextPage = async () => {
+        if (lastVisible) {
+            setPrevPages([...prevPages, lastVisible]);  // 現在の最後のドキュメントをスタックに保存
+            const { products, lastVisible: newLastVisible } = await getProductsByPage(lastVisible);
+            setProducts(products);
+            setLastVisible(newLastVisible);
+        }
+    };
+
+    /** 前のページを取得 */
+    const fetchPrevPage = async () => {
+        const prevLastVisible = prevPages.pop();  // 前のドキュメントを取得
+        if (prevLastVisible) {
+            const { products, lastVisible: newLastVisible } = await getProductsByPage(prevLastVisible);
+            setProducts(products);
+            setLastVisible(newLastVisible);
+        }
     };
 
     /** カテゴリフィルタの変更ハンドラ */
@@ -150,25 +177,33 @@ const MainMenu: React.FC = () => {
                     <p>読み込み中...</p>
                 ) : (
                     <div>
-                        {filteredProducts.length === 0 ? (
+                        {products.length === 0 ? (
+                            // {filteredProducts.length === 0 ? (
                             <p>該当する商品がありません。</p>
                         ) : (
-                            <ul>
-                                {filteredProducts.map((product) => (
-                                    <li key={product.id}>
-                                        <img src={product.imageUrl} alt={product.name} width="100" />
-                                        <h3>{product.name}</h3>
-                                        <p>{product.description}</p>
-                                        <p>価格: ¥{product.price}</p>
-                                        <p>在庫: {product.isAvailable ? "在庫あり" : "売り切れ"}</p>
-                                        {product.isAvailable && (
-                                            <button onClick={() => handleAddToCart(product)}>
-                                                カートに追加
-                                            </button>
-                                        )}
-                                    </li>
-                                ))}
-                            </ul>
+                            <div>
+                                <ul>
+                                    {/* {filteredProducts.map((product) => ( */}
+                                    {products.map((product) => (
+                                        <li key={product.id}>
+                                            <img src={product.imageUrl} alt="画像募集中！" width="100" />
+                                            <p>{product.name}</p>
+                                            {product.description} <br />
+                                            値段: ¥ {product.price.toLocaleString()} <br />
+                                            在庫: {product.isAvailable ? "在庫あり" : "売り切れ"} <br />
+                                            {product.isAvailable && (
+                                                <button onClick={() => handleAddToCart(product)}>
+                                                    カートに追加
+                                                </button>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+
+                                <button onClick={fetchPrevPage} disabled={prevPages.length === 0}>前へ</button>
+                                <button onClick={fetchNextPage}>次へ</button>
+
+                            </div>
                         )}
                     </div>
                 )}
@@ -202,7 +237,7 @@ const MainMenu: React.FC = () => {
                 </div>
 
             </div>
-        </div>
+        </div >
 
     );
 };

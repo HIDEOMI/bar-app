@@ -1,5 +1,6 @@
-import { collection, getDocs, addDoc, updateDoc, doc, Timestamp, query, where } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, doc, Timestamp, query, where, orderBy } from "firebase/firestore";
 import { db } from '../firebase/firebaseConfig';
+import { Order } from "../types/types";
 
 
 /** 注文をFirestoreに保存する関数 */
@@ -22,37 +23,36 @@ export const createOrder = async (userId: string, products: any[], totalPrice: n
 
 /** すべての注文を取得する関数 */
 export const getAllOrders = async () => {
-    const querySnapshot = await getDocs(collection(db, "orders"));
+    const ordersQuery = query(
+        collection(db, 'orders'),
+        orderBy('createdAt', 'asc')
+    );
+    const querySnapshot = await getDocs(ordersQuery);
+
     return querySnapshot.docs.map(doc => {
         const data = doc.data();
         return {
             id: doc.id,
-            totalPrice: data.totalPrice,
-            products: data.products || [],
-            note: data.note || "",
-            status: data.status || "未処理",
-            createdAt: data.createdAt,
-            userId: data.userId,
-        };
+            ...data,
+        } as Order;
     });
 };
 
 /** ユーザーの注文履歴を取得する関数 */
 export const getOrdersByUserId = async (userId: string) => {
-    const q = query(collection(db, "orders"), where("userId", "==", userId));
-    const querySnapshot = await getDocs(q);
+    const ordersQuery = query(
+        collection(db, 'orders'),
+        where("userId", "==", userId),
+        orderBy('createdAt', 'asc')
+    );
+    const querySnapshot = await getDocs(ordersQuery);
 
     return querySnapshot.docs.map(doc => {
         const data = doc.data();
         return {
             id: doc.id,
-            totalPrice: data.totalPrice,
-            products: data.products || [],
-            note: data.note || "",
-            status: data.status || "未処理",
-            createdAt: data.createdAt,
-            userId: data.userId,
-        };
+            ...data,
+        } as Order;
     });
 };
 
@@ -61,7 +61,8 @@ export const getUnpaidOrdersByUserId = async (userId: string) => {
     const q = query(
         collection(db, "orders"),
         where("userId", "==", userId),
-        where("status", "==", "未払い")
+        where("status", "==", "未払い"),
+        orderBy('createdAt', 'asc')
     );
     const querySnapshot = await getDocs(q);
 
@@ -69,13 +70,8 @@ export const getUnpaidOrdersByUserId = async (userId: string) => {
         const data = doc.data();
         return {
             id: doc.id,
-            totalPrice: data.totalPrice,
-            products: data.products || [],
-            note: data.note || "",
-            status: data.status || "未払い",
-            createdAt: data.createdAt,
-            userId: data.userId,
-        };
+            ...data,
+        } as Order;
     });
 };
 

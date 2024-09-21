@@ -1,3 +1,12 @@
+/** Userドキュメント */
+export type  User = {
+    id: string;
+    isAdmin: boolean;
+    email: string;
+    displayName: string;
+    bill: number;  // 支払金額
+};
+
 /** 商品ドキュメント */
 export type Product = {
     id: string;
@@ -49,7 +58,6 @@ export type Order = {
     createdAt: any; // Timestamp型
     userId: string;
 };
-
 
 
 /** 商品とその選択数 */
