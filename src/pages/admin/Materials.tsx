@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Material } from "../../types/types"
 import { getAllMaterials, addMaterial, updateMaterial, deleteMaterial } from '../../services/materials';
-
+import MaterialsTable from '../../components/Tables';
 
 const Materials: React.FC = () => {
     const [loading, setLoading] = useState(false);
@@ -270,20 +270,21 @@ const Materials: React.FC = () => {
                         {filteredMaterials.length === 0 ? (
                             <p>該当する材料がありません。</p>
                         ) : (
-                            <ul>
-                                {filteredMaterials.map((material) => (
-                                    <li key={material.id}>
-                                        <h4>{material.name}</h4>
-                                        在庫: {material.totalAmount.toLocaleString()} {material.unit} <br />
-                                        容量: {material.unitCapacity.toLocaleString()} (ml) <br />
-                                        カテゴリ: {material.category} <br />
-                                        ￥: {material.unitPrice.toLocaleString()} <br />
-                                        備考: {material.note} <br />
-                                        <button onClick={() => handleEditMaterial(material)}>編集</button>
-                                        <button onClick={() => handleDeleteMaterial(material.id)}>削除</button>
-                                    </li>
-                                ))}
-                            </ul>
+                            <MaterialsTable materialData={filteredMaterials} />
+                            // <ul>
+                            //     {filteredMaterials.map((material) => (
+                            //         <li key={material.id}>
+                            //             <h4>{material.name}</h4>
+                            //             在庫: {material.totalAmount.toLocaleString()} {material.unit} <br />
+                            //             容量: {material.unitCapacity.toLocaleString()} (ml) <br />
+                            //             カテゴリ: {material.category} <br />
+                            //             ￥: {material.unitPrice.toLocaleString()} <br />
+                            //             備考: {material.note} <br />
+                            //             <button onClick={() => handleEditMaterial(material)}>編集</button>
+                            //             <button onClick={() => handleDeleteMaterial(material.id)}>削除</button>
+                            //         </li>
+                            //     ))}
+                            // </ul>
                         )}
                     </div>
 
