@@ -41,6 +41,8 @@ export type Material = {
     unitCapacity: number;  // 単位当たりの容量（例: 1本あたり"500"ml など）
     unitPrice: number;  // 単価（例: 1本あたり"2000"円 など）
     note: string;
+    url?: string;
+    standard?: string;
 };
 
 /** 注文ドキュメント */
