@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Order } from "../types/types";
+import { useAuth } from "../hooks/useAuth";
 import { getOrdersByUserId } from "../services/orders";
-import { useAuth } from "../components/AuthProvider";  // ユーザー情報を取得
 
 
 const MyOrders: React.FC = () => {

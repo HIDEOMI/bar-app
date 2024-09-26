@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { AuthProvider, useAuth } from "./components/AuthProvider";
+import { useAuth } from './hooks/useAuth';
+import { AuthProvider}from "./components/AuthProvider";
 import Layout from './components/Layout';
 import Login from "./pages/Login";
 import MainMenu from './pages/MainMenu';

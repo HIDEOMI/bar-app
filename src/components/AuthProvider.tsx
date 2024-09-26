@@ -1,18 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { User } from "../types/types";
 import { onAuthStateChange } from "../services/auth";
 import { getUserDataById, iAmOwer } from '../services/users';
+import { AuthContext } from "../context/AuthContext";
 
-
-type AuthContextType = {
-    user: any | null;
-    loading: boolean;
-    isAdmin: boolean;
-    isFriend: boolean;
-};
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
+/** 認証認可状態を監視するラッパー */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -43,13 +35,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             {!loading && children}
         </AuthContext.Provider>
     );
-};
-
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    // console.log(context);
-    if (!context) {
-        throw new Error("useAuth must be used within an AuthProvider");
-    }
-    return context;
 };

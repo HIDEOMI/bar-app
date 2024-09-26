@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Material } from "../../types/types"
-import { getAllMaterials, addMaterial, updateMaterial, deleteMaterial } from '../../services/materials';
+import { getAllMaterials, addMaterial, updateMaterial, deleteMaterial, getMaterialsByCategory } from '../../services/materials';
 
 
 const Materials: React.FC = () => {
@@ -8,8 +8,7 @@ const Materials: React.FC = () => {
     const [isEditing, setIsEditing] = useState<boolean>(false);  // 編集モードかどうかを管理
     const [message, setMessage] = useState<string | null>(null);  // メッセージを管理
     const [error, setError] = useState<string | null>(null);  // エラーメッセージの状態
-    const [allMaterials, setAllMaterials] = useState<Material[]>([]);
-    const [filteredMaterials, setFilteredMaterials] = useState<Material[]>([]);
+    const [materials, setMaterials] = useState<Material[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>('All');  // 選択されたカテゴリ
     const [formMaterial, setFormMaterial] = useState<Material>({
         id: '',
@@ -29,9 +28,8 @@ const Materials: React.FC = () => {
         const fetchDatas = async () => {
             setLoading(true);
             try {
-                const allMaterialsData = await getAllMaterials();
-                setAllMaterials(allMaterialsData);
-                setFilteredMaterials(allMaterialsData);  // 初期値としてすべての材料を表示
+                const allMaterials = await getAllMaterials();
+                setMaterials(allMaterials);
             } catch (error) {
                 console.error("Error fetching datas: ", error);
             } finally {
@@ -81,7 +79,7 @@ const Materials: React.FC = () => {
         }
 
         // バリデーション: 材料名が重複しているか
-        const isDuplicate = allMaterials.some(
+        const isDuplicate = materials.some(
             (mat) => mat.name === formMaterial.name && mat.id !== formMaterial.id
         );
         if (isDuplicate) {
@@ -117,9 +115,8 @@ const Materials: React.FC = () => {
         }
 
         resetForm();
-        const allMaterialsData = await getAllMaterials();
-        setAllMaterials(allMaterialsData);
-        setFilteredMaterials(allMaterialsData);
+        const allMaterials = await getAllMaterials();
+        setMaterials(allMaterials);
     };
 
     /** キャンセルボタンを押したときのハンドラ */
@@ -129,16 +126,10 @@ const Materials: React.FC = () => {
     };
 
     /** カテゴリフィルタの変更ハンドラ */
-    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleCategoryChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
         const category = e.target.value;
         setSelectedCategory(category);
-
-        if (category === 'All') {
-            setFilteredMaterials(allMaterials);  // "All" を選んだ場合はすべての材料を表示
-        } else {
-            const filtered = allMaterials.filter((material) => material.category === category);
-            setFilteredMaterials(filtered);  // 選択したカテゴリの材料だけを表示
-        }
+        setMaterials(await getMaterialsByCategory(category));
     };
 
     /** 材料を編集するハンドラ */
@@ -152,8 +143,7 @@ const Materials: React.FC = () => {
         await deleteMaterial(id);
         showMessage('商品を削除しました');
         const data = await getAllMaterials();
-        setAllMaterials(data);
-        setFilteredMaterials(data);  // フィルタされたリストも更新
+        setMaterials(data);
     };
 
 
@@ -250,11 +240,11 @@ const Materials: React.FC = () => {
                     <p>読み込み中...</p>
                 ) : (
                     <div>
-                        {filteredMaterials.length === 0 ? (
+                        {materials.length === 0 ? (
                             <p>該当する材料がありません。</p>
                         ) : (
                             <ul>
-                                {filteredMaterials.map((material) => (
+                                {materials.map((material) => (
                                     <li key={material.id}>
                                         <h4>{material.name}</h4>
                                         在庫: {material.totalAmount.toLocaleString()} <br />
