@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Product, CartItem, Material } from "../types/types";
+import { useAuth } from "../hooks/useAuth";
 import { getAllProducts, getProductsByPage } from '../services/products';
 import { createOrder } from "../services/orders";
 import { getAllMaterials, updateMaterial } from "../services/materials";
-import { useAuth } from "../components/AuthProvider";
 
 
 const MainMenu: React.FC = () => {
