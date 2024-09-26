@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User } from "../types/types";
 import { onAuthStateChange } from "../services/auth";
-import { getUserDataById } from '../services/users';
+import { getUserDataById, iAmOwer } from '../services/users';
 
 
 type AuthContextType = {
@@ -22,7 +22,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (user) {
                 const userData = await getUserDataById(user.uid);
                 setUser({ ...user, ...userData });
-                setIsAdmin(userData?.isAdmin || false);
+                setIsAdmin(await iAmOwer(user.uid));
             } else {
                 setUser(null);
                 setIsAdmin(false);

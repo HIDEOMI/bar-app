@@ -1,7 +1,6 @@
 /** Userドキュメント */
 export type  User = {
     id: string;
-    isAdmin: boolean;
     email: string;
     displayName: string;
     bill: number;  // 支払金額

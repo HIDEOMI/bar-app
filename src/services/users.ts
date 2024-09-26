@@ -3,7 +3,7 @@ import { db } from '../firebase/firebaseConfig';
 import { User } from "../types/types";
 
 
-/** ユーザーIDに基づいてユーザー情報を取得する関数 */
+/** ユーザIDに基づいてユーザ情報を取得する関数 */
 export const getUserDataById = async (userId: string) => {
     const userRef = doc(db, "users", userId);
     const userDoc = await getDoc(userRef);
@@ -17,3 +17,14 @@ export const getUserDataById = async (userId: string) => {
         return null; // ユーザーが存在しない場合
     }
 };
+
+/** ユーザIDから管理者情報を取得する関数 */
+export const iAmOwer = async (userId: string) => {
+    const userRef = doc(db, "owners", userId);
+    const userDoc = await getDoc(userRef);
+    if (userDoc.exists()) {
+        return true; // 
+    } else {
+        return false; // ユーザーが存在しない場合
+    }
+}
