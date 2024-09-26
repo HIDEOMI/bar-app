@@ -33,7 +33,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, loading, isAdmin }}>
+        <AuthContext.Provider
+            value={{ user, loading, isAdmin }}>
+            {/* 下階層のコンポーネントを内包する */}
             {!loading && children}
         </AuthContext.Provider>
     );

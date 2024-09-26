@@ -32,6 +32,7 @@ const Navbar: React.FC = () => {
         return () => unsubscribe();
     }, [auth]);
 
+    /** ログアウトする処理 */
     const handleLogout = async () => {
         try {
             await logout();  // ログアウト処理を実行

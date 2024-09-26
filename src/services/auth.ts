@@ -29,7 +29,7 @@ export const signInWithGoogle = async () => {
     }
 };
 
-/** サインアウトの関数 */
+/** ログアウトの関数 */
 export const logout = async () => {
     try {
         await signOut(auth);
@@ -45,3 +45,8 @@ export const onAuthStateChange = (callback: (user: any) => void) => {
         callback(user);
     });
 };
+
+
+export const iAmAdmin = (
+    
+);

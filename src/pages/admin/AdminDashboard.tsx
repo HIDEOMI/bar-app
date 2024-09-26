@@ -5,7 +5,7 @@ import Orders from './Orders';
 
 const AdminDashboard: React.FC = () => {
     return (
-        <div>
+        <>
             <h1>管理者ダッシュボード</h1>
             <Routes>
                 <Route path="/" element={
@@ -19,7 +19,7 @@ const AdminDashboard: React.FC = () => {
                 <Route path="products" element={<Products />} />
                 <Route path="orders" element={<Orders />} />
             </Routes>
-        </div>
+        </>
     );
 };
 
