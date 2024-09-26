@@ -16,7 +16,6 @@ const Materials: React.FC = () => {
         name: '',
         category: '',
         totalAmount: 0,
-        unit: '',
         unitCapacity: 0,
         unitPrice: 0,
         note: ''
@@ -58,7 +57,6 @@ const Materials: React.FC = () => {
             name: '',
             category: '',
             totalAmount: 0,
-            unit: '',
             unitCapacity: 0,
             unitPrice: 0,
             note: ''
@@ -94,12 +92,6 @@ const Materials: React.FC = () => {
         // バリデーション: カテゴリが未選択
         if (formMaterial.category.trim() === '') {
             setError('カテゴリを選択してください。');
-            return;
-        }
-
-        // バリデーション: 単位が空欄
-        if (formMaterial.unit.trim() === '') {
-            setError('単位を入力してください。');
             return;
         }
 
@@ -205,15 +197,6 @@ const Materials: React.FC = () => {
                     onChange={handleChange}
                 />
                 <br />
-                <label >単位: </label>
-                <input
-                    type="text"
-                    name="unit"
-                    placeholder="単位"
-                    value={formMaterial.unit}
-                    onChange={handleChange}
-                />
-                <br />
                 <label >単位当たりの容量: </label>
                 <input
                     type="number"
@@ -274,7 +257,7 @@ const Materials: React.FC = () => {
                                 {filteredMaterials.map((material) => (
                                     <li key={material.id}>
                                         <h4>{material.name}</h4>
-                                        在庫: {material.totalAmount.toLocaleString()} {material.unit} <br />
+                                        在庫: {material.totalAmount.toLocaleString()} <br />
                                         容量: {material.unitCapacity.toLocaleString()} (ml) <br />
                                         カテゴリ: {material.category} <br />
                                         ￥: {material.unitPrice.toLocaleString()} <br />
