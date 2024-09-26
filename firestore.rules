@@ -1,0 +1,67 @@
+service cloud.firestore {
+  match /databases/{database}/documents {
+// 管理者かどうか判断するカスタム関数
+    function isOwner() {
+    	return request.auth != null &&
+    		exists(/databases/$(database)/documents/owners/$(request.auth.uid));
+    }
+
+// 認可ユーザかどうか判断するカスタム関数
+    function isFriend() {
+    	return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isFriend == true;
+    }
+
+
+
+// owners コレクションに対して適用されるルール
+    match /owners/{document=**} {
+      // Firestoreコンソール以外の書き込みや編集を拒否する
+      allow read: if request.auth != null || isOwner();  // 認証済みユーザーとオーナーのみ読み込み可能
+      allow write: if false; // SDKからの編集は常に拒否
+    }
+
+// user コレクションに対して適用されるルール
+		match /users/{document=**} {
+			// 読み込み：管理者 or 認証ユーザ
+    	allow read: if isOwner() || request.auth != null;
+      // 作成：管理者 or 認証ユーザは自分のレコードのみ
+      allow create: if isOwner() || (request.auth.uid == request.resource.id);
+      // 更新：管理者 or 自分のレコードのifFriend, bill以外
+			allow update: if isOwner()
+       || (
+				request.resource.id == request.auth.uid
+				 && (request.resource.data.isFriend != true)
+         && !('bill' in request.resource.data)
+       );
+			// 削除：管理者
+      allow delete: if isOwner();      
+    }
+
+// materials コレクションに対して適用されるルール
+		match /materials/{document=**} {
+      allow write, read: if isOwner();  // 管理者はすべてのフィールドを更新可
+    	allow read: if isFriend();  // 認証認可済みユーザーのみ読み込み可能
+    }
+
+// products コレクションに対して適用されるルール
+		match /products/{document=**} {
+      allow write, read: if isOwner();  // 管理者はすべてのフィールドを更新可
+    	allow read: if isFriend();  // 認証認可済みユーザーのみ読み込み可能
+    }
+
+// orders コレクションに対して適用されるルール
+		match /orders/{orderId} {
+      allow write, read: if isOwner();  // 管理者はすべてのフィールドを更新可
+      allow create: if isFriend() && resource.data.userId;  // 認証認可済みユーザーが自分の注文のみ作成可能 
+    	allow read: if request.auth.uid == resource.data.userId;  // 自分の注文のみ閲覧可能      
+    }
+
+// それ以外のコレクションに適用されるルール（通常のアクセスルールを設定）
+    // match /{document=**} {
+    //   allow write: if isOwner();  // 管理者はすべてのフィールドを更新可
+    //   allow read: if isFriend();  // 認証認可済みユーザーのみ読み込み可能
+    // }
+    
+  }
+}

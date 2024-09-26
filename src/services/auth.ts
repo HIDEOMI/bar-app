@@ -14,11 +14,12 @@ export const signInWithGoogle = async () => {
         const docSnap = await getDoc(userRef);
 
         if (!docSnap.exists()) {
-            // 新規ユーザーの場合
+            // 新規ユーザーの場合レコード作成
             await setDoc(userRef, {
                 email: user.email,
                 displayName: user.displayName,
-                isAdmin: false // デフォルトは一般ユーザー
+                isFriend: false // デフォルトは未認可
+                // bill: 0   支払い情報は入れない
             });
         }
 

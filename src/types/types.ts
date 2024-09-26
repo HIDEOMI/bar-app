@@ -2,8 +2,9 @@
 export type  User = {
     id: string;
     email: string;
+    isFriend: boolean;
     displayName: string;
-    bill: number;  // 支払金額
+    bill?: number;  // 支払金額
 };
 
 /** 商品ドキュメント */

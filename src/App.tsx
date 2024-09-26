@@ -11,9 +11,11 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 
 /** 認証が必要なコンポーネントをラップする */
 const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { user } = useAuth();
+    const { user, isFriend } = useAuth();
     if (!user) {
         return <Login />;
+    } else if (!isFriend) {
+        return <p>認可が必要です！承認されるまでもうしばらくお待ちくださいmm</p>;
     }
     return <>{children}</>;
 };
