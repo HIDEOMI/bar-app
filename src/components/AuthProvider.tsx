@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { User } from "../types/types";
 import { onAuthStateChange } from "../services/auth";
 import { getUserDataById, iAmOwer } from '../services/users';
