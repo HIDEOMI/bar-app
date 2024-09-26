@@ -45,8 +45,3 @@ export const onAuthStateChange = (callback: (user: any) => void) => {
         callback(user);
     });
 };
-
-
-export const iAmAdmin = (
-    
-);
