@@ -1,9 +1,5 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-
-// import logo from './logo.svg';
-// import './App.css';
-
 import { AuthProvider, useAuth } from "./components/AuthProvider";
 import Layout from './components/Layout';
 import Login from "./pages/Login";
@@ -36,17 +32,18 @@ const App: React.FC = () => {
     return (
         <AuthProvider>
             <Router>
-                <Layout>
-                    <Routes>
-                        <Route path="/" element={<RequireAuth><MainMenu /></RequireAuth>} />
-                        {/* <Route path="/" element={<MainMenu />} /> */}
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/my_orders" element={<MyOrders />} />  {/* 注文履歴のルートを追加 */}
-                        <Route path="/payment" element={<Payment />} />  {/* 支払いページのルート */}
-                        {/* 管理者専用ルート */}
-                        <Route path="/admin/*" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
-                    </Routes>
-                </Layout>
+                <RequireAuth>
+                    <Layout>
+                        <Routes>
+                            <Route path="/*" element={<MainMenu />} />
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/my_orders" element={<MyOrders />} />
+                            <Route path="/payment" element={<Payment />} />
+                            {/* 管理者専用ルート */}
+                            <Route path="/admin/*" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
+                        </Routes>
+                    </Layout>
+                </RequireAuth>
             </Router>
         </AuthProvider>
     );
