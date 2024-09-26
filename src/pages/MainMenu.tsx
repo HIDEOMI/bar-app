@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Product, CartItem, Material } from "../types/types";
 import { useAuth } from "../hooks/useAuth";
-import { getAllProducts, getProductsByPage } from '../services/products';
+import { getProductsByPage, getProductsByCategory } from '../services/products';
 import { createOrder } from "../services/orders";
 import { getAllMaterials, updateMaterial } from "../services/materials";
 
@@ -13,33 +13,27 @@ const MainMenu: React.FC = () => {
     const [message, setMessage] = useState<string | null>(null);  // メッセージを管理
     const [error, setError] = useState<string | null>(null);  // エラーメッセージの状態
     const [products, setProducts] = useState<Product[]>([]);
-    const [allProducts, setAllProducts] = useState<Product[]>([]);
     const [allMaterials, setAllMaterials] = useState<Material[]>([]);
-    const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-    const [lastVisible, setLastVisible] = useState<any>(null);  // ページネーションのための最後のドキュメント
-    const [prevPages, setPrevPages] = useState<any[]>([]);  // 戻るためのドキュメントスタック  
+    const [page, setPage] = useState<number>(1);
+    const [countInPage, setCountInPage] = useState<number>(10);
     const [selectedCategory, setSelectedCategory] = useState<string>('All');  // 選択されたカテゴリ
     const [cart, setCart] = useState<CartItem[]>([]);
     const [totalPrice, setTotalPrice] = useState(0);
     const [note, setNote] = useState("");  // 備考欄
     const [isSubmitting, setIsSubmitting] = useState(false);  // 注文送信中の状態
 
-    const baseCategories = ['All', 'ウイスキー', 'ジン', 'ウォッカ', 'ラム'];  // カテゴリの選択肢  
+    const baseCategories = ['All', 'ウイスキー', 'ジン', 'ウォッカ', 'ラム'];  // カテゴリの選択肢
 
 
     useEffect(() => {
         const fetchDatas = async () => {
             setLoading(true);
             try {
-                const { products, lastVisible } = await getProductsByPage();
-                setProducts(products);
-                setLastVisible(lastVisible);
-
-                // const allProductsData = await getAllProducts();
+                const productsByPage = await getProductsByPage(page, countInPage);
+                setProducts(productsByPage);
                 const allMaterialsData = await getAllMaterials();
-                // setAllProducts(allProductsData);
                 setAllMaterials(allMaterialsData);
-                // setFilteredProducts(allProductsData);  // 初期値としてすべての材料を表示
+                console.log(productsByPage);
             } catch (error) {
                 console.error("Error fetching datas: ", error);
             } finally {
@@ -47,7 +41,7 @@ const MainMenu: React.FC = () => {
             }
         };
         fetchDatas();
-    }, []);  // category のみを依存配列に含める
+    }, []);
 
     /** メッセージを一定時間表示した後に非表示にする処理 */
     const showMessage = (msg: string) => {
@@ -59,35 +53,25 @@ const MainMenu: React.FC = () => {
 
     /** 次のページを取得 */
     const fetchNextPage = async () => {
-        if (lastVisible) {
-            setPrevPages([...prevPages, lastVisible]);  // 現在の最後のドキュメントをスタックに保存
-            const { products, lastVisible: newLastVisible } = await getProductsByPage(lastVisible);
-            setProducts(products);
-            setLastVisible(newLastVisible);
-        }
+        const nextPage = page + 1
+        const products = await getProductsByPage(nextPage, countInPage);
+        setPage(nextPage);
+        setProducts(products);
     };
 
     /** 前のページを取得 */
     const fetchPrevPage = async () => {
-        const prevLastVisible = prevPages.pop();  // 前のドキュメントを取得
-        if (prevLastVisible) {
-            const { products, lastVisible: newLastVisible } = await getProductsByPage(prevLastVisible);
-            setProducts(products);
-            setLastVisible(newLastVisible);
-        }
+        const prevPage = page - 1
+        const products = await getProductsByPage(prevPage, countInPage);
+        setPage(prevPage);
+        setProducts(products);
     };
 
     /** カテゴリフィルタの変更ハンドラ */
-    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleCategoryChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
         const category = e.target.value;
         setSelectedCategory(category);
-
-        if (category === 'All') {
-            setFilteredProducts(allProducts);  // "All" を選んだ場合はすべての商品を表示
-        } else {
-            const filtered = allProducts.filter((product) => product.bases.includes(category));
-            setFilteredProducts(filtered);  // 選択したカテゴリの材料だけを表示
-        }
+        setProducts(await getProductsByCategory(category));
     };
 
     /** 商品をカートに追加するハンドラ */
@@ -183,7 +167,6 @@ const MainMenu: React.FC = () => {
                         ) : (
                             <div>
                                 <ul>
-                                    {/* {filteredProducts.map((product) => ( */}
                                     {products.map((product) => (
                                         <li key={product.id}>
                                             <img src={product.imageUrl} alt="画像募集中！" width="100" />
@@ -200,7 +183,7 @@ const MainMenu: React.FC = () => {
                                     ))}
                                 </ul>
 
-                                <button onClick={fetchPrevPage} disabled={prevPages.length === 0}>前へ</button>
+                                <button onClick={fetchPrevPage} disabled={page <= 1}>前へ</button>
                                 <button onClick={fetchNextPage}>次へ</button>
 
                             </div>
