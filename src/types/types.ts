@@ -1,10 +1,10 @@
 /** Userドキュメント */
 export type  User = {
     id: string;
-    isAdmin: boolean;
     email: string;
+    isFriend: boolean;
     displayName: string;
-    bill: number;  // 支払金額
+    bill?: number;  // 支払金額
 };
 
 /** 商品ドキュメント */
@@ -37,7 +37,6 @@ export type Material = {
     name: string;
     category: string;
     totalAmount: number;  // 単位に対する総量（例: 2本, 3個 など）
-    unit: string;
     unitCapacity: number;  // 単位当たりの容量（例: 1本あたり"500"ml など）
     unitPrice: number;  // 単価（例: 1本あたり"2000"円 など）
     note: string;

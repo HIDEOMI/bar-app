@@ -16,7 +16,7 @@ const Login: React.FC = () => {
     return (
         <div>
             <h1>ようこそ！！！</h1>
-            <p>ログインしてください</p>
+            <p>※サービスを利用するには会員登録を完了する必要があります！</p>
             <button onClick={handleSignIn}>Googleでサインイン</button>
         </div>
     );
