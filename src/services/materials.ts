@@ -9,7 +9,7 @@ export const getMaterialsByCategory = async (category: string) => {
     let q;
     if (category === "All") {
         q = query(collection(db, "materials"),
-            orderBy('category', 'asc'),
+            orderBy('category', 'desc'),
             orderBy('name', 'asc')
         );
     } else {
