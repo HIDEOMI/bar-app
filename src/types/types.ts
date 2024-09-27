@@ -42,6 +42,7 @@ export type Material = {
     note: string;
     url: string;
     teiban: string;
+    already?: string;
 };
 
 /** 注文ドキュメント */
