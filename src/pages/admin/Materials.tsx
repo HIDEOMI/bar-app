@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Material } from "../../types/types"
 import { getAllMaterials, addMaterial, updateMaterial, deleteMaterial, getMaterialsByCategory } from '../../services/materials';
+import { BasicTable } from '../../components/ProductTable';
 
 
 const Materials: React.FC = () => {
@@ -29,7 +30,6 @@ const Materials: React.FC = () => {
             try {
                 const allMaterials = await getAllMaterials();
                 setMaterials(allMaterials);
-                console.log(allMaterials);
             } catch (error) {
                 console.error("Error fetching datas: ", error);
             } finally {
@@ -243,20 +243,21 @@ const Materials: React.FC = () => {
                         {materials.length === 0 ? (
                             <p>該当する材料がありません。</p>
                         ) : (
-                            <ul>
-                                {materials.map((material) => (
-                                    <li key={material.id}>
-                                        <h4>{material.name}</h4>
-                                        在庫: {material.totalAmount.toLocaleString()} <br />
-                                        容量: {material.unitCapacity.toLocaleString()} {material.unitCapacity > 4 ? "ml" : "個"} <br />
-                                        カテゴリ: {material.category} <br />
-                                        ￥: {material.unitPrice.toLocaleString()} <br />
-                                        備考: {material.note} <br />
-                                        <button onClick={() => handleEditMaterial(material)}>編集</button>
-                                        <button onClick={() => handleDeleteMaterial(material.id)}>削除</button>
-                                    </li>
-                                ))}
-                            </ul>
+                            <BasicTable materials={materials} />
+                            // <ul>
+                            //     {materials.map((material) => (
+                            //         <li key={material.id}>
+                            //             <h4>{material.name}</h4>
+                            //             在庫: {material.totalAmount.toLocaleString()} <br />
+                            //             容量: {material.unitCapacity.toLocaleString()} {material.unitCapacity > 4 ? "ml" : "個"} <br />
+                            //             カテゴリ: {material.category} <br />
+                            //             ￥: {material.unitPrice.toLocaleString()} <br />
+                            //             備考: {material.note} <br />
+                            //             <button onClick={() => handleEditMaterial(material)}>編集</button>
+                            //             <button onClick={() => handleDeleteMaterial(material.id)}>削除</button>
+                            //         </li>
+                            //     ))}
+                            // </ul>
                         )}
                     </div>
 
