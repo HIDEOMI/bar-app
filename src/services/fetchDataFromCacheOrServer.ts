@@ -24,6 +24,7 @@ export const getLastUpdateTimestamp = async (collectionName: string) => {
 
 /** ローカル or サーバ からデータを取得する関数 */
 export const fetchDataFromCacheOrServer = async (collectionName: string, query: Query<DocumentData, DocumentData>): Promise<object[]> => {
+    console.log("対象コレクション：" + collectionName);
     // まずキャッシュからデータを取得
     try {
         /** キャッシュタイムアウトしている場合、問答無用でサーバから取得する */
