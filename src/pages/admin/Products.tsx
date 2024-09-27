@@ -193,52 +193,46 @@ const Products: React.FC = () => {
     const handleUpdateProducts = async () => {
         console.log("==== 商品の在庫状況と値段を最新化 ====");
         const allMaterials = await getAllMaterials();
-        console.log(allMaterials);
-        // console.log(allProducts);
         /** 在庫状況と値段を最新化した Product[] */
         const updatedProducts = allProducts.map(product => {
-            // console.log("");
-            // console.log("");
-            // console.log(product.name);
-            let isAvailableChanged = false;
-
-            // 商品に含まれる材料情報を最新化
+            // 商品に含まれる材料から在庫と値段を最新化
             let isAvailable = true;
+            let price = 0;
             product.materials = product.materials.map(materialInProduct => {
-
                 // 商品に含まれる材料の１つを特定
                 const matchedMaterial = allMaterials.find((material) => material.id === materialInProduct.id) ?? false;
 
-                // 在庫の有無を確認
-                isAvailable = matchedMaterial
-                    ? matchedMaterial.totalAmount - (materialInProduct.quantity / matchedMaterial.unitCapacity) >= 0
-                    : false; // `isAvailable` を更新
-
-                // 更新対象かどうか確認
-                if (product.isAvailable !== isAvailable) {
-                    isAvailableChanged = true;
+                // 在庫の有無を確認：一個でも足りない材料があれば売り切れ
+                if (isAvailable) {
+                    isAvailable = matchedMaterial
+                        ? matchedMaterial.totalAmount - (materialInProduct.quantity / matchedMaterial.unitCapacity) >= 0
+                        : false; // `isAvailable` を更新
                 }
 
-                product.isAvailable = isAvailable;
-
-                if (isAvailableChanged) {
-                    console.log(product.isAvailable);
-                    console.log(materialInProduct);
-                    updateProduct(product.id, {
-                        isAvailable: product.isAvailable,
-                    });
-                    console.log(`${product.name} の情報をFirestoreに更新しました(` + product.id + ")");
+                // matchedMaterialが存在する場合のみ値段を計算
+                if (matchedMaterial) {
+                    price += matchedMaterial.unitPrice * (materialInProduct.quantity / matchedMaterial.unitCapacity);
+                } else {
+                    console.warn(`Material not found for ID: ${materialInProduct.id}`);
                 }
 
                 return materialInProduct; // 更新後の `materialInProduct` を返す
             });
-            if (product.isAvailable) {
-                console.log(product.name + "は在庫アリ(" + product.id + ")");
+
+            price = Math.ceil(price);
+            // 更新対象かどうか確認
+            if ((product.isAvailable !== isAvailable) || (product.price !== price)) {
+                product.isAvailable = isAvailable;
+                product.price = price;
+                updateProduct(product.id, {
+                    isAvailable: product.isAvailable,
+                    price: product.price,
+                });
+                console.log(`${product.name} の情報をFirestoreに更新しました(` + product.id + ")");
             }
             return product; // 更新後の `product` を返す
         });
 
-        console.log(updatedProducts);
         setAllProducts(updatedProducts);
     };
 
