@@ -1,6 +1,7 @@
 import { collection, getDocs, addDoc, updateDoc, doc, Timestamp, query, where, orderBy } from "firebase/firestore";
 import { db } from '../firebase/firebaseConfig';
 import { Order } from "../types/types";
+import { fetchDataFromCacheOrServer } from "./fetchDataFromCacheOrServer";
 
 
 /** 注文をFirestoreに保存する関数 */
@@ -21,13 +22,33 @@ export const createOrder = async (userId: string, products: any[], totalPrice: n
     }
 };
 
+/** 注文の状態を更新する関数 */
+export const updateOrderStatus = async (orderId: string, status: string) => {
+    const orderRef = doc(db, "orders", orderId);
+    await updateDoc(orderRef, { status });
+};
+
 /** すべての注文を取得する関数 */
-export const getAllOrders = async () => {
-    const ordersQuery = query(
-        collection(db, 'orders'),
+export const getAllOrders = async (): Promise<Order[]> => {
+    const q = query(collection(db, 'orders'),
         orderBy('createdAt', 'asc')
     );
-    const querySnapshot = await getDocs(ordersQuery);
+
+    const allOrders = await fetchDataFromCacheOrServer('orders', q) as Order[];
+    return allOrders;
+};
+
+/** 未払いの注文を取得する関数 */
+export const getUnpaidOrdersByUserId = async (userId: string) => {
+    const status = "未払い"
+    console.log("対象ステータス：" + status);
+    const q = query(
+        collection(db, "orders"),
+        where("userId", "==", userId),
+        where("status", "==", "未払い"),
+        orderBy('createdAt', 'asc')
+    );
+    const querySnapshot = await getDocs(q);
 
     return querySnapshot.docs.map(doc => {
         const data = doc.data();
@@ -56,27 +77,3 @@ export const getOrdersByUserId = async (userId: string) => {
     });
 };
 
-/** 未払いの注文を取得する関数 */
-export const getUnpaidOrdersByUserId = async (userId: string) => {
-    const q = query(
-        collection(db, "orders"),
-        where("userId", "==", userId),
-        where("status", "==", "未払い"),
-        orderBy('createdAt', 'asc')
-    );
-    const querySnapshot = await getDocs(q);
-
-    return querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-            id: doc.id,
-            ...data,
-        } as Order;
-    });
-};
-
-/** 注文の状態を更新する関数 */
-export const updateOrderStatus = async (orderId: string, status: string) => {
-    const orderRef = doc(db, "orders", orderId);
-    await updateDoc(orderRef, { status });
-};
