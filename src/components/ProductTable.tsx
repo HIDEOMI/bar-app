@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Table, TableContainer, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react';
 import { Input } from '@mui/material';
 import { RowData } from '@tanstack/table-core';
 import { Material } from '../types/types';
+
 
 // TableMeta を拡張して updateData を定義
 declare module '@tanstack/table-core' {
@@ -19,30 +20,49 @@ interface BasicTableProps {
 // カラム定義
 const columns: ColumnDef<Material, any>[] = [
     {
+        accessorKey: 'category',
+        header: 'カテゴリ',
+    },
+    {
         accessorKey: 'name',
         header: '名前',
+    },
+    {
+        accessorKey: 'totalAmount',
+        header: '数量',
+    },
+    {
+        accessorKey: 'teiban',
+        header: '定番',
     },
     {
         accessorKey: 'unitPrice',
         header: '単価',
     },
+    {
+        accessorKey: 'unitCapacity',
+        header: '単位量',
+    },
+    {
+        accessorKey: 'note',
+        header: '備考',
+    },
+    {
+        accessorKey: 'url',
+        header: 'URL',
+    },
 ];
 
 // デフォルトカラムの定義
 const defaultColumn: Partial<ColumnDef<Material>> = {
-    cell: ({ getValue, row: { index }, column: { id }, table }) => {
+    cell: React.memo(({ getValue, row: { index }, column: { id }, table }) => {
         const initialValue = getValue();
-        if (id !== 'name') {
-            return <>{initialValue}</>;
-        }
-        // eslint-disable-next-line react-hooks/rules-of-hooks
         const [value, setValue] = useState(initialValue);
 
         const onBlur = () => {
             table.options.meta?.updateData(index, id, value);
         };
 
-        // eslint-disable-next-line react-hooks/rules-of-hooks
         useEffect(() => {
             setValue(initialValue);
         }, [initialValue]);
@@ -54,11 +74,12 @@ const defaultColumn: Partial<ColumnDef<Material>> = {
                 onBlur={onBlur}
             />
         );
-    },
+    }),
 };
 
+
 // BasicTable コンポーネント
-export const BasicTable: React.FC<BasicTableProps> = ({ materials }) => {
+export const BasicTable: React.FC<BasicTableProps> = React.memo(({ materials }) => {
     const table = useReactTable<Material>({
         data: materials,
         columns,
@@ -99,4 +120,4 @@ export const BasicTable: React.FC<BasicTableProps> = ({ materials }) => {
             </Table>
         </TableContainer>
     );
-};
+});
