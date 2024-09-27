@@ -13,6 +13,7 @@ export const addProduct = async (product: Product) => {
 
 /** Productを更新登録するサービス。updataDataの中にID属性を入れないように注意！ */
 export const updateProduct = async (id: string, updateData: any) => {
+    console.log("=== firestoreに保存 ===");
     const productRef = doc(db, collectionName, id);  // ドキュメントIDを指定
     await updateDoc(productRef, updateData);
     await setTimestamp(collectionName);
@@ -37,12 +38,11 @@ export const getAllProducts = async (): Promise<Product[]> => {
 };
 
 /** ページネーションで商品データを取得する関数 */
-export const getProductsByPage = async (page: number, countInPage: number) => {
+export const getProductsByPage = async (products: Product[], page: number, countInPage: number) => {
     console.log("対象ページ：" + page);
     console.log("表示件数：" + countInPage);
-    const allProducts = await getAllProducts();
     console.log("==== ページネーション実行 ====");
-    const productsByPage = allProducts.sort((a, b) => a.name.localeCompare(b.name)).slice(countInPage * (page - 1), countInPage * (page));
+    const productsByPage = products.sort((a, b) => a.name.localeCompare(b.name)).slice(countInPage * (page - 1), countInPage * (page));
     return productsByPage;
 };
 
