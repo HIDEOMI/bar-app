@@ -1,38 +1,38 @@
 import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
 import { db } from '../firebase/firebaseConfig';
 import { Material } from "../types/types";
-import { setTimestamp } from "./updateTimestamp";
-import { fetchDataFromCacheOrServer } from "./fetchDataFromCacheOrServer";
+import { setTimestamp, fetchDataFromCacheOrServer } from "./fetchDataFromCacheOrServer";
 
+const collectionName = 'materials';
 
 export const addMaterial = async (material: Material) => {
     const { id, ...addData } = material;  // ID属性が余分なので外す
-    await addDoc(collection(db, 'materials'), addData);
-    await setTimestamp("materials");
+    await addDoc(collection(db, collectionName), addData);
+    await setTimestamp(collectionName);
 };
 
 /** Materialを更新登録するサービス。updataDataにID属性を入れないように注意！ */
 export const updateMaterial = async (id: string, updatedData: any) => {
-    const materialRef = doc(db, 'materials', id);
+    const materialRef = doc(db, collectionName, id);
     await updateDoc(materialRef, updatedData);
-    await setTimestamp("materials");
+    await setTimestamp(collectionName);
 };
 
 export const deleteMaterial = async (id: string) => {
-    const materialRef = doc(db, 'materials', id);
+    const materialRef = doc(db, collectionName, id);
     console.log(id);
     await deleteDoc(materialRef);
-    await setTimestamp("materials");
+    await setTimestamp(collectionName);
 };
 
 export const getAllMaterials = async (): Promise<Material[]> => {
-    console.log("=== Materials 全件取得 ===");
-    const q = query(collection(db, "materials"),
+    console.log("=== " + collectionName + " 全件取得 ===");
+    const q = query(collection(db, collectionName),
         orderBy('category', 'desc'),
         orderBy('name', 'asc')
     );
 
-    const allMaterials = await fetchDataFromCacheOrServer("materials", q) as Material[];
+    const allMaterials = await fetchDataFromCacheOrServer(collectionName, q) as Material[];
     return allMaterials;
 };
 
