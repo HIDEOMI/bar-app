@@ -7,9 +7,9 @@ import { getUserNameFrom } from '../../services/users';
 const makeUserIdToNames = async (orders: Order[]) => {
     const userIdToNames: { [key: string]: string } = {};
     for (const order of orders) {
-        console.log(order.userId);
+        // console.log(order.userId);
         const displayName = await getUserNameFrom(order.userId);
-        console.log(displayName);
+        // console.log(displayName);
         userIdToNames[order.userId] = displayName;
     }
 
@@ -39,8 +39,6 @@ const Orders: React.FC = () => {
             }
         };
         fetchOrders();
-        // キャッシュが更新されたらローカルストレージに保存
-        // saveCacheToLocalStorage(userCache);
         console.log(userIdToNames)
         // userNames[order.userId]
     }, []);
