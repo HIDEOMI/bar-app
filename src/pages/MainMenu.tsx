@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Product, CartItem, Material } from "../types/types";
+import { Product, CartItem } from "../types/types";
 import { useAuth } from "../hooks/useAuth";
-import { getProductsByPage, getProductsByCategory } from '../services/products';
+import { getProductsByPage, getProductsByCategory, getAllProducts } from '../services/products';
 import { createOrder } from "../services/orders";
-import { getAllMaterials, updateMaterial } from "../services/materials";
 
 
 const MainMenu: React.FC = () => {
@@ -13,14 +12,15 @@ const MainMenu: React.FC = () => {
     const [message, setMessage] = useState<string | null>(null);  // メッセージを管理
     const [error, setError] = useState<string | null>(null);  // エラーメッセージの状態
     const [products, setProducts] = useState<Product[]>([]);
-    const [allMaterials, setAllMaterials] = useState<Material[]>([]);
+    const [productsByPage, setProductsByPage] = useState<Product[]>([]);
     const [page, setPage] = useState<number>(1);
-    const [countInPage, setCountInPage] = useState<number>(10);
+    const [countInPage, setCountInPage] = useState<number>(5);
     const [selectedCategory, setSelectedCategory] = useState<string>('All');  // 選択されたカテゴリ
     const [cart, setCart] = useState<CartItem[]>([]);
     const [totalPrice, setTotalPrice] = useState(0);
     const [note, setNote] = useState("");  // 備考欄
     const [isSubmitting, setIsSubmitting] = useState(false);  // 注文送信中の状態
+    const [isAvailable, setIsAvailable] = useState<boolean>(false);
 
     const baseCategories = ['All', 'ウイスキー', 'ジン', 'ウォッカ', 'ラム'];  // カテゴリの選択肢
 
@@ -29,10 +29,7 @@ const MainMenu: React.FC = () => {
         const fetchDatas = async () => {
             setLoading(true);
             try {
-                const productsByPage = await getProductsByPage(page, countInPage);
-                setProducts(productsByPage);
-                const allMaterialsData = await getAllMaterials();
-                setAllMaterials(allMaterialsData);
+                filterAndSetProducts();
             } catch (error) {
                 console.error("Error fetching datas: ", error);
             } finally {
@@ -40,7 +37,23 @@ const MainMenu: React.FC = () => {
             }
         };
         fetchDatas();
-    }, []);
+    }, [isAvailable, selectedCategory]);
+
+
+    /** 商品リストのフィルタリングと初期ページ設定を行う関数 */
+    const filterAndSetProducts = async () => {
+        // カテゴリ商品を取得
+        const productsByCategory = await getProductsByCategory(selectedCategory);
+
+        // 在庫アリ or ナシでフィルタリング
+        const filteredProducts = isAvailable ? productsByCategory : productsByCategory.filter(product => product.isAvailable);
+        setProducts(filteredProducts);
+
+        // 状態を変えたら1ページに戻る
+        const productsByPage = await getProductsByPage(filteredProducts, 1, countInPage);
+        setProductsByPage(productsByPage);
+        setPage(1);
+    };
 
     /** メッセージを一定時間表示した後に非表示にする処理 */
     const showMessage = (msg: string) => {
@@ -53,25 +66,34 @@ const MainMenu: React.FC = () => {
     /** 次のページを取得 */
     const fetchNextPage = async () => {
         const nextPage = page + 1
-        const products = await getProductsByPage(nextPage, countInPage);
+        const productsByPage = await getProductsByPage(products, nextPage, countInPage);
         setPage(nextPage);
-        setProducts(products);
+        setProductsByPage(productsByPage);
     };
 
     /** 前のページを取得 */
     const fetchPrevPage = async () => {
         const prevPage = page - 1
-        const products = await getProductsByPage(prevPage, countInPage);
+        const productsByPage = await getProductsByPage(products, prevPage, countInPage);
         setPage(prevPage);
-        setProducts(products);
+        setProductsByPage(productsByPage);
     };
 
     /** カテゴリフィルタの変更ハンドラ */
     const handleCategoryChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        // 選択状態を取得
         const category = e.target.value;
         setSelectedCategory(category);
-        setProducts(await getProductsByCategory(category));
+        console.log("選択したカテゴリ：" + category);
     };
+
+    /** 在庫フィルタチェックボックスの変更ハンドラ */
+    const handleShowHideOutOfStock = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        // 選択状態を取得
+        const isChecked = e.target.checked;
+        setIsAvailable(isChecked);
+        console.log("在庫ナシも表示する：" + isChecked);
+    }
 
     /** 商品をカートに追加するハンドラ */
     const handleAddToCart = (product: Product) => {
@@ -110,18 +132,18 @@ const MainMenu: React.FC = () => {
         try {
             const orderId = await createOrder(user.uid, orderItems, totalPrice, note);
 
-            // 使用した材料の在庫を減らす
-            for (const item of cart) {
-                const product = item.product;
-                for (const materialInProduct of product.materials) {
-                    const materialId = materialInProduct.id;
-                    const material = allMaterials.find((m) => m.id === materialId);
-                    const remainingTotalAmount = material && (material.totalAmount - item.quantity * materialInProduct.quantity / material.unitCapacity);
-                    if (material) {
-                        await updateMaterial(materialId, { totalAmount: remainingTotalAmount });
-                    }
-                }
-            }
+            // // 使用した材料の在庫を減らす
+            // for (const item of cart) {
+            //     const product = item.product;
+            //     for (const materialInProduct of product.materials) {
+            //         const materialId = materialInProduct.id;
+            //         const material = allMaterials.find((m) => m.id === materialId);
+            //         const remainingTotalAmount = material && (material.totalAmount - item.quantity * materialInProduct.quantity / material.unitCapacity);
+            //         if (material) {
+            //             await updateMaterial(materialId, { totalAmount: remainingTotalAmount });
+            //         }
+            //     }
+            // }
 
             console.log("注文が確定しました！ 注文ID:", orderId);
             showMessage("注文が確定しました！");
@@ -156,17 +178,21 @@ const MainMenu: React.FC = () => {
                     ))}
                 </select>
 
+                <br />
+                <label>※在庫切れ商品も表示する場合はチェックを入れる </label>
+                <input type="checkbox" checked={isAvailable} onChange={handleShowHideOutOfStock} />
+
                 {loading ? (
                     <p>読み込み中...</p>
                 ) : (
                     <div>
-                        {products.length === 0 ? (
+                        {productsByPage.length === 0 ? (
                             // {filteredProducts.length === 0 ? (
                             <p>該当する商品がありません。</p>
                         ) : (
                             <div>
                                 <ul>
-                                    {products.map((product) => (
+                                    {productsByPage.map((product) => (
                                         <li key={product.id}>
                                             <img src={product.imageUrl} alt="画像募集中！" width="100" />
                                             <p>{product.name}</p>
