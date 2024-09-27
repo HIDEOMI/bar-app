@@ -215,11 +215,10 @@ const Products: React.FC = () => {
                     : false; // `isAvailable` を更新
 
                 // 更新対象かどうか確認
-                if ((product.isAvailable !== isAvailable) || (materialInProduct.isAvailable !== isAvailable)) {
+                if (product.isAvailable !== isAvailable) {
                     isAvailableChanged = true;
                 }
 
-                materialInProduct.isAvailable = isAvailable;
                 product.isAvailable = isAvailable;
 
                 if (isAvailableChanged) {
@@ -227,7 +226,6 @@ const Products: React.FC = () => {
                     console.log(materialInProduct);
                     updateProduct(product.id, {
                         isAvailable: product.isAvailable,
-                        materials: product.materials,
                     });
                     console.log(`${product.name} の情報をFirestoreに更新しました(` + product.id + ")");
                 }

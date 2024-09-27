@@ -28,7 +28,7 @@ export type MaterialInProduct = {
     id: string;
     name: string;
     quantity: number;  // 商品における必要な材料の量
-    isAvailable: boolean;  // 材料の在庫があるかどうか
+    // isAvailable: boolean;  // 材料の在庫があるかどうか
 };
 
 /** 材料ドキュメント */
