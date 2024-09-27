@@ -30,7 +30,7 @@ const Navbar: React.FC = () => {
 
         // コンポーネントがアンマウントされたときに監視を解除
         return () => unsubscribe();
-    }, [auth]);
+    }, []);
 
     /** ログアウトする処理 */
     const handleLogout = async () => {
