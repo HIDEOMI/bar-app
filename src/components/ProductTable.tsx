@@ -6,7 +6,7 @@ import { RowData } from '@tanstack/table-core';
 import { Material } from '../types/types';
 
 
-// TableMeta を拡張して updateData を定義
+/** TableMeta を拡張して updateData を定義 */
 declare module '@tanstack/table-core' {
     interface TableMeta<TData extends RowData> {
         updateData: (rowIndex: number, columnId: string, value: unknown) => void;
@@ -17,7 +17,7 @@ interface BasicTableProps {
     materials: Material[];
 }
 
-// カラム定義
+/** カラム定義 */
 const columns: ColumnDef<Material, any>[] = [
     {
         accessorKey: 'category',
@@ -26,6 +26,7 @@ const columns: ColumnDef<Material, any>[] = [
     {
         accessorKey: 'name',
         header: '名前',
+        size: 500,
     },
     {
         accessorKey: 'totalAmount',
@@ -53,7 +54,7 @@ const columns: ColumnDef<Material, any>[] = [
     },
 ];
 
-// デフォルトカラムの定義
+/** デフォルトカラムの定義 */
 const defaultColumn: Partial<ColumnDef<Material>> = {
     cell: React.memo(({ getValue, row: { index }, column: { id }, table }) => {
         const initialValue = getValue();
@@ -78,16 +79,19 @@ const defaultColumn: Partial<ColumnDef<Material>> = {
 };
 
 
-// BasicTable コンポーネント
+/** BasicTable コンポーネント */
 export const BasicTable: React.FC<BasicTableProps> = React.memo(({ materials }) => {
     const table = useReactTable<Material>({
         data: materials,
         columns,
         defaultColumn,
         getCoreRowModel: getCoreRowModel(),
+        enableGlobalFilter: true, // グローバルフィルタを有効にする
+        enableColumnFilters: true, // カラムごとのフィルタを有効にする
         meta: {
             updateData: (rowIndex: number, columnId: string, value: any) => {
                 console.log(`table update data: rowIndex=${rowIndex}, columnId=${columnId}, value=${value}`);
+                console.log(materials[rowIndex]);
             },
         },
     });
