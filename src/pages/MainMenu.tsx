@@ -33,7 +33,6 @@ const MainMenu: React.FC = () => {
                 setProducts(productsByPage);
                 const allMaterialsData = await getAllMaterials();
                 setAllMaterials(allMaterialsData);
-                console.log(productsByPage);
             } catch (error) {
                 console.error("Error fetching datas: ", error);
             } finally {
