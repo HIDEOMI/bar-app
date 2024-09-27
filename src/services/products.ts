@@ -1,7 +1,8 @@
-import { collection, getDocsFromServer, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
 import { db } from '../firebase/firebaseConfig';
 import { Product } from "../types/types";
-import { setTimestamp, getLastUpdateTimestamp } from "./updateTimestamp";
+import { setTimestamp } from "./updateTimestamp";
+import { fetchDataFromCacheOrServer } from "./fetchDataFromCacheOrServer";
 
 
 export const addProduct = async (product: Product) => {
@@ -31,42 +32,8 @@ export const getAllProducts = async (): Promise<Product[]> => {
         orderBy('name', 'asc')
     );
 
-    // まずキャッシュからデータを取得
-    try {
-        /** キャッシュタイムアウトしている場合、問答無用でサーバから取得する */
-        const CACHE_TIMEOUT = 12 * 60 * 60 * 1000;  // 12時間
-        const cachedData = localStorage.getItem('products');
-        const cachedTime = localStorage.getItem('productsCacheTime');
-        const lastUpdateTime = await getLastUpdateTimestamp('products') || 0;
-        if (cachedData
-            && cachedTime
-            && (Date.now() - parseInt(cachedTime) < CACHE_TIMEOUT)
-            && (lastUpdateTime !== 0 && parseInt(cachedTime) > lastUpdateTime.toMillis())
-        ) {
-            console.log("キャッシュが有効です。");
-            return JSON.parse(cachedData);  // キャッシュデータをそのまま返す   
-        }
-    } catch (cacheError) {
-        console.warn("キャッシュからの取得に失敗:", cacheError);
-    }
-
-    // キャッシュがない場合、サーバーからデータを取得
-    try {
-        console.log("サーバーからデータを取得中...");
-        const serverQuerySnapshot = await getDocsFromServer(q);
-        const serverData = serverQuerySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-        }) as Product);
-        console.log("サーバーデータを取得しました。");
-        // キャッシュを更新
-        localStorage.setItem('products', JSON.stringify(serverData));
-        localStorage.setItem('productsCacheTime', Date.now().toString());
-        return serverData;
-    } catch (serverError) {
-        console.error("サーバーからの取得に失敗:", serverError);
-        throw serverError;
-    }
+    const allMaterials = await fetchDataFromCacheOrServer("products", q) as Product[];
+    return allMaterials;
 };
 
 /** ページネーションで商品データを取得する関数 */
