@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Product, CartItem } from "../types/types";
 import { useAuth } from "../hooks/useAuth";
-import { getProductsByPage, getProductsByCategory, getAllProducts } from '../services/products';
+import { getProductsByPage, getProductsByCategory } from '../services/products';
 import { createOrder } from "../services/orders";
 
 
@@ -14,7 +14,7 @@ const MainMenu: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [productsByPage, setProductsByPage] = useState<Product[]>([]);
     const [page, setPage] = useState<number>(1);
-    const [countInPage, setCountInPage] = useState<number>(5);
+    const [countInPage, setCountInPage] = useState<number>(20);
     const [selectedCategory, setSelectedCategory] = useState<string>('All');  // 選択されたカテゴリ
     const [cart, setCart] = useState<CartItem[]>([]);
     const [totalPrice, setTotalPrice] = useState(0);
