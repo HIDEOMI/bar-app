@@ -18,7 +18,9 @@ const Materials: React.FC = () => {
         totalAmount: 0,
         unitCapacity: 0,
         unitPrice: 0,
-        note: ''
+        note: '',
+        url: "",
+        teiban: "",
     });
 
     const categories = ['choose a category', '醸造酒', '蒸留酒', 'リキュール', 'ソフトドリンク', 'シロップ', 'その他'];  // カテゴリの選択肢
@@ -57,7 +59,9 @@ const Materials: React.FC = () => {
             totalAmount: 0,
             unitCapacity: 0,
             unitPrice: 0,
-            note: ''
+            note: '',
+            url: "",
+            teiban: "",
         });  // 新規材料の初期値
         setIsEditing(false);  // 編集モードを解除
         setError(null);
