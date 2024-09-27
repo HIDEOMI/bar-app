@@ -1,5 +1,5 @@
 /** Userドキュメント */
-export type  User = {
+export type User = {
     id: string;
     email: string;
     isFriend: boolean;
@@ -40,6 +40,8 @@ export type Material = {
     unitCapacity: number;  // 単位当たりの容量（例: 1本あたり"500"ml など）
     unitPrice: number;  // 単価（例: 1本あたり"2000"円 など）
     note: string;
+    url: string;
+    teiban: string;
 };
 
 /** 注文ドキュメント */
