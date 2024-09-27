@@ -2,23 +2,21 @@ import React, { useEffect, useState } from 'react';
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Table, TableContainer, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react';
 import { Input } from '@mui/material';
+import { RowData } from '@tanstack/table-core';
 import { Material } from '../types/types';
 
-
-
-import { RowData } from '@tanstack/table-core';
-
+// TableMeta を拡張して updateData を定義
 declare module '@tanstack/table-core' {
     interface TableMeta<TData extends RowData> {
         updateData: (rowIndex: number, columnId: string, value: unknown) => void;
     }
 }
 
-
 interface BasicTableProps {
     materials: Material[];
 }
 
+// カラム定義
 const columns: ColumnDef<Material, any>[] = [
     {
         accessorKey: 'name',
@@ -30,6 +28,7 @@ const columns: ColumnDef<Material, any>[] = [
     },
 ];
 
+// デフォルトカラムの定義
 const defaultColumn: Partial<ColumnDef<Material>> = {
     cell: ({ getValue, row: { index }, column: { id }, table }) => {
         const initialValue = getValue();
@@ -48,11 +47,17 @@ const defaultColumn: Partial<ColumnDef<Material>> = {
             setValue(initialValue);
         }, [initialValue]);
 
-        return <Input value={value as string} onChange={(e) => setValue(e.target.value)} onBlur={onBlur} />;
+        return (
+            <Input
+                value={value as string}
+                onChange={(e) => setValue(e.target.value)}
+                onBlur={onBlur}
+            />
+        );
     },
 };
 
-
+// BasicTable コンポーネント
 export const BasicTable: React.FC<BasicTableProps> = ({ materials }) => {
     const table = useReactTable<Material>({
         data: materials,
@@ -60,8 +65,8 @@ export const BasicTable: React.FC<BasicTableProps> = ({ materials }) => {
         defaultColumn,
         getCoreRowModel: getCoreRowModel(),
         meta: {
-            updateData: (index: number, columnId: string, value: any) => {
-                console.log(`table update data index:`, index, 'columnId:', columnId, 'value:', value);
+            updateData: (rowIndex: number, columnId: string, value: any) => {
+                console.log(`table update data: rowIndex=${rowIndex}, columnId=${columnId}, value=${value}`);
             },
         },
     });
