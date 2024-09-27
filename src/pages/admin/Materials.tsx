@@ -20,9 +20,8 @@ const Materials: React.FC = () => {
         note: ''
     });
 
-    const categories = ['choose a category', '蒸留酒', '醸造酒', 'リキュール', 'ソフトドリンク', 'シロップ', 'その他'];  // カテゴリの選択肢  
-    const filterCategories = ['All', '蒸留酒', '醸造酒', 'リキュール', 'ソフトドリンク', 'シロップ', 'その他'];  // カテゴリの選択肢  
-
+    const categories = ['choose a category', '醸造酒', '蒸留酒', 'リキュール', 'ソフトドリンク', 'シロップ', 'その他'];  // カテゴリの選択肢
+    const filterCategories = ['All', '醸造酒', '蒸留酒', 'リキュール', 'ソフトドリンク', 'シロップ', 'その他'];  // カテゴリの選択肢
 
     useEffect(() => {
         const fetchDatas = async () => {
@@ -248,7 +247,7 @@ const Materials: React.FC = () => {
                                     <li key={material.id}>
                                         <h4>{material.name}</h4>
                                         在庫: {material.totalAmount.toLocaleString()} <br />
-                                        容量: {material.unitCapacity.toLocaleString()} (ml) <br />
+                                        容量: {material.unitCapacity.toLocaleString()} {material.unitCapacity > 4 ? "ml" : "個"} <br />
                                         カテゴリ: {material.category} <br />
                                         ￥: {material.unitPrice.toLocaleString()} <br />
                                         備考: {material.note} <br />
