@@ -54,8 +54,8 @@ export const fetchDataFromCacheOrServer = async (collectionName: string, query: 
         }) as Object);
         console.log("サーバーデータを取得しました。");
         // キャッシュを更新
-        localStorage.setItem('materials', JSON.stringify(serverData));
-        localStorage.setItem('materialsCacheTime', Date.now().toString());
+        localStorage.setItem(collectionName, JSON.stringify(serverData));
+        localStorage.setItem(collectionName + 'CacheTime', Date.now().toString());
         return serverData;
     } catch (serverError) {
         console.error("サーバーからの取得に失敗:", serverError);
