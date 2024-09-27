@@ -26,7 +26,6 @@ export const deleteMaterial = async (id: string) => {
 
 export const getAllMaterials = async (): Promise<Material[]> => {
     console.log("=== Materials 全件取得 ===");
-    // クエリの設定
     const q = query(collection(db, "materials"),
         orderBy('category', 'desc'),
         orderBy('name', 'asc')
