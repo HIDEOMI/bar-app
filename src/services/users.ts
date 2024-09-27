@@ -9,6 +9,7 @@ const MAX_CACHE_SIZE = 100;  // キャッシュの最大サイズを100エント
 /** ローカルストレージからユーザキャッシュを取得する関数 */
 const loadUserCacheFromLocalStorage = (): { [key: string]: CachedUser } => {
     const cache = localStorage.getItem('usersCache');
+    // console.log(cache);
     return cache ? JSON.parse(cache) : {};
 };
 

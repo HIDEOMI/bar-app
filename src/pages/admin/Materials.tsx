@@ -29,6 +29,7 @@ const Materials: React.FC = () => {
             try {
                 const allMaterials = await getAllMaterials();
                 setMaterials(allMaterials);
+                console.log(allMaterials);
             } catch (error) {
                 console.error("Error fetching datas: ", error);
             } finally {

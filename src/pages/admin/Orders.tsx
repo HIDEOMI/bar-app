@@ -2,14 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { Order } from "../../types/types";
 import { getAllOrders, updateOrderStatus } from '../../services/orders';
 import { getUserNameFrom } from '../../services/users';
-
+import firebase from '../../services/firebase';
+import { Timestamp } from 'firebase/firestore';
 
 const makeUserIdToNames = async (orders: Order[]) => {
     const userIdToNames: { [key: string]: string } = {};
     for (const order of orders) {
-        console.log(order.userId);
+        // console.log(order.userId);
         const displayName = await getUserNameFrom(order.userId);
-        console.log(displayName);
+        // console.log(displayName);
         userIdToNames[order.userId] = displayName;
     }
 
@@ -39,8 +40,6 @@ const Orders: React.FC = () => {
             }
         };
         fetchOrders();
-        // キャッシュが更新されたらローカルストレージに保存
-        // saveCacheToLocalStorage(userCache);
         console.log(userIdToNames)
         // userNames[order.userId]
     }, []);
@@ -82,26 +81,33 @@ const Orders: React.FC = () => {
                         <p>該当する注文がありません。</p>
                     ) : (
                         <ul>
-                            {filteredOrders.map(order => (
-                                <li key={order.id}>
-                                    {/* <h3>注文ID: {order.id}</h3> */}
-                                    <h3>注文日時: {order.createdAt.toDate().toLocaleString()}</h3>
-                                    <p>ユーザー: {userIdToNames[order.userId] || "不明なユーザー"}</p> {/* displayNameを表示 */}
-                                    <ul>
-                                        {order.products.map(product => (
-                                            <li key={product.productId}>
-                                                {product.name} - 数量: {product.quantity} - 価格: ¥{product.price.toLocaleString()}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    <p>備考: {order.note}</p>
-                                    <p>合計金額: ¥{order.totalPrice.toLocaleString()}</p>
-                                    <p>現在の状態: {order.status}</p>
-                                    <button onClick={() => handleStatusChange(order.id, "未処理")}>未処理にする</button>
-                                    <button onClick={() => handleStatusChange(order.id, "未払い")}>提供済み</button>
-                                    <button onClick={() => handleStatusChange(order.id, "完了")}>完了にする</button>
-                                </li>
-                            ))}
+                            {filteredOrders.map(order => {
+                                // createdAt が Firebase Timestamp 型かどうかを確認
+                                const createdAt = order.createdAt instanceof Timestamp
+                                    ? order.createdAt.toDate()
+                                    : new Date(order.createdAt.seconds * 1000); // もし Timestamp でなければ Date オブジェクトに変換
+
+                                return (
+                                    <li key={order.id}>
+                                        {/* <h3>注文ID: {order.id}</h3> */}
+                                        <h3>注文日時: {createdAt.toLocaleString()}</h3>
+                                        <p>ユーザー: {userIdToNames[order.userId] || "不明なユーザー"}</p> {/* displayNameを表示 */}
+                                        <ul>
+                                            {order.products.map(product => (
+                                                <li key={product.productId}>
+                                                    {product.name} - 数量: {product.quantity} - 価格: ¥{product.price.toLocaleString()}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <p>備考: {order.note}</p>
+                                        <p>合計金額: ¥{order.totalPrice.toLocaleString()}</p>
+                                        <p>現在の状態: {order.status}</p>
+                                        <button onClick={() => handleStatusChange(order.id, "未処理")}>未処理にする</button>
+                                        <button onClick={() => handleStatusChange(order.id, "未払い")}>提供済み</button>
+                                        <button onClick={() => handleStatusChange(order.id, "完了")}>完了にする</button>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     )}
                 </div>

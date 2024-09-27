@@ -189,6 +189,53 @@ const Products: React.FC = () => {
         setMessage('キャンセルしました。');
     };
 
+    /** 商品更新ボタンを押したときのハンドラ */
+    const handleUpdateProducts = async () => {
+        console.log("==== 商品の在庫状況と値段を最新化 ====");
+        const allMaterials = await getAllMaterials();
+        /** 在庫状況と値段を最新化した Product[] */
+        const updatedProducts = allProducts.map(product => {
+            // 商品に含まれる材料から在庫と値段を最新化
+            let isAvailable = true;
+            let price = 0;
+            product.materials = product.materials.map(materialInProduct => {
+                // 商品に含まれる材料の１つを特定
+                const matchedMaterial = allMaterials.find((material) => material.id === materialInProduct.id) ?? false;
+
+                // 在庫の有無を確認：一個でも足りない材料があれば売り切れ
+                if (isAvailable) {
+                    isAvailable = matchedMaterial
+                        ? matchedMaterial.totalAmount - (materialInProduct.quantity / matchedMaterial.unitCapacity) >= 0
+                        : false; // `isAvailable` を更新
+                }
+
+                // matchedMaterialが存在する場合のみ値段を計算
+                if (matchedMaterial) {
+                    price += matchedMaterial.unitPrice * (materialInProduct.quantity / matchedMaterial.unitCapacity);
+                } else {
+                    console.warn(`Material not found for ID: ${materialInProduct.id}`);
+                }
+
+                return materialInProduct; // 更新後の `materialInProduct` を返す
+            });
+
+            price = Math.ceil(price) + 50;
+            // 更新対象かどうか確認
+            if ((product.isAvailable !== isAvailable) || (product.price !== price)) {
+                product.isAvailable = isAvailable;
+                product.price = price;
+                updateProduct(product.id, {
+                    isAvailable: product.isAvailable,
+                    price: product.price,
+                });
+                console.log(`${product.name} の情報をFirestoreに更新しました(` + product.id + ")");
+            }
+            return product; // 更新後の `product` を返す
+        });
+
+        setAllProducts(updatedProducts);
+    };
+
     /** カテゴリフィルタの変更ハンドラ */
     const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const category = e.target.value;
@@ -342,6 +389,9 @@ const Products: React.FC = () => {
 
             <h2>商品リスト</h2>
             <div>
+                <button onClick={handleUpdateProducts}>商品最新化</button>
+                <br />
+
                 <label>カテゴリ選択: </label>
                 <select value={selectedCategory} onChange={handleCategoryChange}>
                     {baseCategories.map((category) => (
