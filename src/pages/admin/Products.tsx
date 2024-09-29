@@ -16,18 +16,28 @@ const Products: React.FC = () => {
     const [selectedCategory, setSelectedCategory] = useState<string>('All');  // 選択されたカテゴリ
     const [selectedMaterials, setSelectedMaterials] = useState<MaterialInProduct[]>([]);
     const [formProduct, setFormProduct] = useState<Product>({
-        id: '',
-        name: '',
+        id: "",
+        name: "",
         price: 0,
-        description: '',
+        description: "",
+        summary: "",
         categories: [],
         bases: [],
-        color: '',
+        color: "",
         alc: 0,
-        recipe: '',
-        imageUrl: '',
-        isAvailable: true,
+        alc_taste: "",
+        already: "",
+        isAvailable: false,
+        recipe: "",
+        imageUrl: "",
         materials: [],
+        method: "",
+        recommendation: "",
+        tpo: "",
+        glass: "",
+        type: "",
+        word: "",
+        date: "",
     });
 
     const categoriesList = ['カクテル', 'ビール', 'ワイン'];  // カテゴリの選択肢
@@ -71,18 +81,28 @@ const Products: React.FC = () => {
     /** フォームのリセット処理 */
     const resetForm = () => {
         setFormProduct({
-            id: '',
-            name: '',
+            id: "",
+            name: "",
             price: 0,
-            description: '',
+            description: "",
+            summary: "",
             categories: [],
             bases: [],
-            color: '',
+            color: "",
             alc: 0,
-            recipe: '',
-            imageUrl: '',
+            alc_taste: "",
+            already: "",
             isAvailable: false,
+            recipe: "",
+            imageUrl: "",
             materials: [],
+            method: "",
+            recommendation: "",
+            tpo: "",
+            glass: "",
+            type: "",
+            word: "",
+            date: "",
         });
         setSelectedMaterials([]);
         setIsEditing(false);  // 編集モードを解除
@@ -411,17 +431,21 @@ const Products: React.FC = () => {
                             <ul>
                                 {filteredProducts.map(product => (
                                     <li key={product.id}>
-                                        <h4>{product.name}</h4>
-                                        値段: ¥ {product.price.toLocaleString()} <br />
-                                        カテゴリ: {product.categories.join(', ')} <br />
-                                        ベース: {product.bases.join(', ')} <br />
-                                        アルコール度数: {product.alc}% <br />
-                                        色: {product.color} <br />
-                                        材料: {product.materials.map(m => m.name).join(', ')} <br />
-                                        在庫: {product.isAvailable ? 'あり' : 'なし'} <br />
-                                        レシピ: {product.recipe} <br />
-                                        <button onClick={() => handleEditProduct(product)}>編集</button>
-                                        <button onClick={() => handleDeleteProduct(product.id)}>削除</button>
+                                        <>
+                                            {/* {console.log(product.name)} */}
+                                            {/* {console.log(product.id)} */}
+                                            <h4>{product.name}</h4>
+                                            値段: ¥ {product.price.toLocaleString()} <br />
+                                            カテゴリ: {product.categories.join(', ')} <br />
+                                            ベース: {product.bases.join(', ')} <br />
+                                            アルコール度数: {product.alc}% <br />
+                                            色: {product.color} <br />
+                                            材料: {product.materials.map(m => m.name).join(', ')} <br />
+                                            在庫: {product.isAvailable ? 'あり' : 'なし'} <br />
+                                            レシピ: {product.recipe} <br />
+                                            <button onClick={() => handleEditProduct(product)}>編集</button>
+                                            <button onClick={() => handleDeleteProduct(product.id)}>削除</button>
+                                        </>
                                     </li>
                                 ))}
                             </ul>
