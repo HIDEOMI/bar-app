@@ -42,15 +42,6 @@ const Materials: React.FC = () => {
         fetchDatas();
     }, []);
 
-
-    /** メッセージを一定時間表示した後に非表示にする処理 */
-    const showMessage = (msg: string) => {
-        setMessage(msg);
-        setTimeout(() => {
-            setMessage(null);
-        }, 2000);  // 2秒後にメッセージを非表示
-    };
-
     /** フォームのリセット処理 */
     const resetForm = () => {
         setFormMaterial({
@@ -113,10 +104,10 @@ const Materials: React.FC = () => {
         if (isEditing) {
             const { id, ...updateData } = formMaterial;
             await updateMaterial(id, updateData);
-            showMessage('材料を更新しました');
+            window.confirm('材料を更新しました');
         } else {
             await addMaterial(formMaterial);
-            showMessage('材料を追加しました');
+            window.confirm('材料を追加しました');
         }
 
         resetForm();
@@ -137,10 +128,9 @@ const Materials: React.FC = () => {
         setMaterials(await getMaterialsByCategory(category));
     };
 
-
     /** 材料の変更内容をDBに保存するハンドラ
-     * firestoreへの更新回数を少なくするため、オブジェクトを再構築してから更新する
-     * 一度連想配列のオブジェクトを構築した後、同じIDのものをまとめてJSON形式で取得した後、Promise.allで一括更新する
+     * - firestoreへの書き込み回数を少なくするため、オブジェクトを再構築してから更新する
+     * - 一度連想配列のオブジェクトを構築、同じIDのものをまとめてJSON形式で取得、最後にPromise.allで一括更新する
      */
     const handleSaveChanges = async () => {
         const updateData = pendingUpdates.reduce((acc, update) => {
@@ -156,7 +146,7 @@ const Materials: React.FC = () => {
         const updatePromises = Object.values(updateData).map((data) => updateMaterial(data.id, data));
         await Promise.all(updatePromises);
         setPendingUpdates([]);
-        showMessage('変更を保存しました');
+        window.confirm('変更を保存しました');
     }
 
     /** 材料の値を変更したときに変更内容を保持するハンドラ */
