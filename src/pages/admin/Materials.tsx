@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Material } from "../../types/types"
 import { getAllMaterials, addMaterial, updateMaterial, deleteMaterial, getMaterialsByCategory } from '../../services/materials';
-import { BasicTable } from '../../components/ProductTable';
+import { BasicTable } from '../../components/MaterialTable';
 
 
 const Materials: React.FC = () => {
