@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Material } from "../../types/types"
 import { getAllMaterials, addMaterial, updateMaterial, deleteMaterial, getMaterialsByCategory } from '../../services/materials';
+import { BasicTable } from '../../components/MaterialTable';
 
 
 const Materials: React.FC = () => {
@@ -17,8 +18,11 @@ const Materials: React.FC = () => {
         totalAmount: 0,
         unitCapacity: 0,
         unitPrice: 0,
-        note: ''
+        note: '',
+        url: "",
+        teiban: "",
     });
+    const [pendingUpdates, setPendingUpdates] = useState<{ [key: string]: any; id: string }[]>([]);
 
     const categories = ['choose a category', '醸造酒', '蒸留酒', 'リキュール', 'ソフトドリンク', 'シロップ', 'その他'];  // カテゴリの選択肢
     const filterCategories = ['All', '醸造酒', '蒸留酒', 'リキュール', 'ソフトドリンク', 'シロップ', 'その他'];  // カテゴリの選択肢
@@ -29,7 +33,6 @@ const Materials: React.FC = () => {
             try {
                 const allMaterials = await getAllMaterials();
                 setMaterials(allMaterials);
-                console.log(allMaterials);
             } catch (error) {
                 console.error("Error fetching datas: ", error);
             } finally {
@@ -57,7 +60,9 @@ const Materials: React.FC = () => {
             totalAmount: 0,
             unitCapacity: 0,
             unitPrice: 0,
-            note: ''
+            note: '',
+            url: "",
+            teiban: "",
         });  // 新規材料の初期値
         setIsEditing(false);  // 編集モードを解除
         setError(null);
@@ -132,18 +137,48 @@ const Materials: React.FC = () => {
         setMaterials(await getMaterialsByCategory(category));
     };
 
-    /** 材料を編集するハンドラ */
-    const handleEditMaterial = (material: Material) => {
-        setFormMaterial(material);  // 編集モードで既存データをセット
-        setIsEditing(true);
+
+    /** 材料の変更内容をDBに保存するハンドラ
+     * firestoreへの更新回数を少なくするため、オブジェクトを再構築してから更新する
+     * 一度連想配列のオブジェクトを構築した後、同じIDのものをまとめてJSON形式で取得した後、Promise.allで一括更新する
+     */
+    const handleSaveChanges = async () => {
+        const updateData = pendingUpdates.reduce((acc, update) => {
+            const { id, ...data } = update;
+            if (!acc[id]) {
+                acc[id] = { id, ...data };
+            } else {
+                acc[id] = { ...acc[id], ...data };
+            }
+            return acc;
+        }, {} as { [key: string]: any });
+
+        const updatePromises = Object.values(updateData).map((data) => updateMaterial(data.id, data));
+        await Promise.all(updatePromises);
+        setPendingUpdates([]);
+        showMessage('変更を保存しました');
+    }
+
+    /** 材料の値を変更したときに変更内容を保持するハンドラ */
+    const handlePendingUpdate = async (updateInfo: { [key: string]: any; id: string; }) => {
+        setPendingUpdates([...pendingUpdates, updateInfo]);
+        console.log(pendingUpdates);
     };
 
-    /** 材料を削除するハンドラ */
+    /** 削除ボタンが押されたとき、材料を削除するハンドラ
+     * - 削除実行前に確認メッセージを表示
+     * - キャンセルボタンが押された場合、その旨メッセージ表示
+     */
     const handleDeleteMaterial = async (id: string) => {
-        await deleteMaterial(id);
-        showMessage('商品を削除しました');
-        const data = await getAllMaterials();
-        setMaterials(data);
+        const isConfirmed = window.confirm('本当に削除しますか？');
+        if (isConfirmed) {
+            await deleteMaterial(id);
+            const allMaterials = await getAllMaterials();
+            setMaterials(allMaterials);
+            window.confirm('材料を削除しました');
+        } else {
+            window.confirm('削除をキャンセルしました');
+        }
     };
 
 
@@ -243,20 +278,14 @@ const Materials: React.FC = () => {
                         {materials.length === 0 ? (
                             <p>該当する材料がありません。</p>
                         ) : (
-                            <ul>
-                                {materials.map((material) => (
-                                    <li key={material.id}>
-                                        <h4>{material.name}</h4>
-                                        在庫: {material.totalAmount.toLocaleString()} <br />
-                                        容量: {material.unitCapacity.toLocaleString()} {material.unitCapacity > 4 ? "ml" : "個"} <br />
-                                        カテゴリ: {material.category} <br />
-                                        ￥: {material.unitPrice.toLocaleString()} <br />
-                                        備考: {material.note} <br />
-                                        <button onClick={() => handleEditMaterial(material)}>編集</button>
-                                        <button onClick={() => handleDeleteMaterial(material.id)}>削除</button>
-                                    </li>
-                                ))}
-                            </ul>
+                            <>
+                                <button onClick={handleSaveChanges}>全体を更新する</button>
+                                <BasicTable
+                                    materials={materials}
+                                    handlePendingUpdate={handlePendingUpdate}
+                                    handleDeleteMaterial={handleDeleteMaterial}
+                                />
+                            </>
                         )}
                     </div>
 

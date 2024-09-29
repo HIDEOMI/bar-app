@@ -1,5 +1,5 @@
 /** Userドキュメント */
-export type  User = {
+export type User = {
     id: string;
     email: string;
     isFriend: boolean;
@@ -12,15 +12,25 @@ export type Product = {
     id: string;
     name: string;
     price: number;
-    description: string;
+    description: string;     // 商品の説明詳細
+    summary: string;         // 商品の説明概要
     categories: string[];
-    bases: string[];  // ベースになっているお酒
+    bases: string[];         // ベースになっているお酒
     color: string;
-    alc: number;  // アルコール度数
-    recipe: string;  // カクテルの作り方
+    alc: number;             // アルコール度数
+    alc_taste: string;       // アルコール度数に対する階級
+    already: string;         // 商品として提供可能な準備ができているかどうか
+    isAvailable: boolean;    // 商品の在庫があるかどうか
+    recipe: string;          // カクテルの作り方
     imageUrl: string;
-    isAvailable: boolean;  // 商品の在庫があるかどうか
-    materials: MaterialInProduct[];
+    materials: MaterialInProduct[];  // 使っている材料
+    method: string;          // どんな手法で作成するか
+    recommendation: string;  // オススメかどうか
+    tpo: string;             // 飲むのに適したタイミング
+    glass: string;
+    type: string;            // ロングかショートか
+    word: string;            // カクテル言葉
+    date: string;            // 対象の誕生日
 };
 
 /** 商品における必要な材料の型定義 */
@@ -40,6 +50,8 @@ export type Material = {
     unitCapacity: number;  // 単位当たりの容量（例: 1本あたり"500"ml など）
     unitPrice: number;  // 単価（例: 1本あたり"2000"円 など）
     note: string;
+    url: string;
+    teiban: string;
 };
 
 /** 注文ドキュメント */

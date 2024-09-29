@@ -34,7 +34,7 @@ export const updateOrderStatus = async (orderId: string, status: string) => {
 /** すべての注文を取得する関数 */
 export const getAllOrders = async (): Promise<Order[]> => {
     const q = query(collection(db, collectionName),
-        orderBy('createdAt', 'asc')
+        orderBy('createdAt', 'desc')
     );
 
     const allOrders = await fetchDataFromCacheOrServer(collectionName, q) as Order[];
@@ -79,4 +79,3 @@ export const getOrdersByUserId = async (userId: string) => {
         } as Order;
     });
 };
-

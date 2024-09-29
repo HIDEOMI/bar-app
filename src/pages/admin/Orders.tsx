@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Order } from "../../types/types";
 import { getAllOrders, updateOrderStatus } from '../../services/orders';
 import { getUserNameFrom } from '../../services/users';
-import firebase from '../../services/firebase';
 import { Timestamp } from 'firebase/firestore';
 
 const makeUserIdToNames = async (orders: Order[]) => {
@@ -40,8 +39,6 @@ const Orders: React.FC = () => {
             }
         };
         fetchOrders();
-        console.log(userIdToNames)
-        // userNames[order.userId]
     }, []);
 
 
@@ -57,9 +54,9 @@ const Orders: React.FC = () => {
 
 
     /** フィルタリングされた注文を取得 */
-    const filteredOrders = selectedStatus === "全て"
-        ? orders
-        : orders.filter(order => order.status === selectedStatus);
+    const filteredOrders
+        = selectedStatus === "全て" ? orders
+            : orders.filter(order => order.status === selectedStatus);
 
     return (
         <div>
