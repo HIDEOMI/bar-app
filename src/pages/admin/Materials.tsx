@@ -165,12 +165,20 @@ const Materials: React.FC = () => {
         console.log(pendingUpdates);
     };
 
-    /** 材料を削除するハンドラ */
+    /** 削除ボタンが押されたとき、材料を削除するハンドラ
+     * - 削除実行前に確認メッセージを表示
+     * - キャンセルボタンが押された場合、その旨メッセージ表示
+     */
     const handleDeleteMaterial = async (id: string) => {
-        await deleteMaterial(id);
-        showMessage('商品を削除しました');
-        const data = await getAllMaterials();
-        setMaterials(data);
+        const isConfirmed = window.confirm('本当に削除しますか？');
+        if (isConfirmed) {
+            await deleteMaterial(id);
+            const allMaterials = await getAllMaterials();
+            setMaterials(allMaterials);
+            window.confirm('材料を削除しました');
+        } else {
+            window.confirm('削除をキャンセルしました');
+        }
     };
 
 
@@ -272,10 +280,10 @@ const Materials: React.FC = () => {
                         ) : (
                             <>
                                 <button onClick={handleSaveChanges}>全体を更新する</button>
-                                <BasicTable 
-                                    materials={materials} 
-                                    handlePendingUpdate={handlePendingUpdate} 
-                                    handleDeleteMaterial={handleDeleteMaterial} 
+                                <BasicTable
+                                    materials={materials}
+                                    handlePendingUpdate={handlePendingUpdate}
+                                    handleDeleteMaterial={handleDeleteMaterial}
                                 />
                             </>
                         )}
