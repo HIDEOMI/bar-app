@@ -54,9 +54,9 @@ const Orders: React.FC = () => {
 
 
     /** フィルタリングされた注文を取得 */
-    const filteredOrders = selectedStatus === "全て"
-        ? orders
-        : orders.filter(order => order.status === selectedStatus);
+    const filteredOrders
+        = selectedStatus === "全て" ? orders
+            : orders.filter(order => order.status === selectedStatus);
 
     return (
         <div>
