@@ -10,15 +10,25 @@ import { Material } from '../types/types';
 declare module '@tanstack/table-core' {
     interface TableMeta<TData extends RowData> {
         updateData: (rowIndex: number, columnId: string, value: unknown) => void;
+        handleDeleteMaterial: (id: string) => void;
     }
 }
 
-interface BasicTableProps {
+export interface BasicTableProps {
     materials: Material[];
+    handlePendingUpdate: (updateInfo: { [key: string]: any; id: string; }) => Promise<void>;
+    handleDeleteMaterial: (id: string) => Promise<void>;
 }
 
 /** カラム定義 */
 const columns: ColumnDef<Material, any>[] = [
+    {
+        id: 'delete',
+        header: '削除',
+        cell: ({ row, table }) => (
+            <button onClick={() => table.options.meta?.handleDeleteMaterial(row.original.id)}>削除</button>
+        ),
+    },
     {
         accessorKey: 'category',
         header: 'カテゴリ',
@@ -80,9 +90,8 @@ const defaultColumn: Partial<ColumnDef<Material>> = {
 
 
 /** BasicTable コンポーネント */
-export const BasicTable: React.FC<BasicTableProps> = React.memo(({ materials }) => {
-    const [updateData, setUdpateData] = useState<Material[]>([]);
-
+export const BasicTable: React.FC<BasicTableProps> = React.memo(({ materials, handlePendingUpdate, handleDeleteMaterial }) => {
+    // const [updateData, setUdpateData] = useState<{ [key: string]: any; id: string }[]>([]);
 
     const table = useReactTable<Material>({
         data: materials,
@@ -94,19 +103,10 @@ export const BasicTable: React.FC<BasicTableProps> = React.memo(({ materials }) 
         meta: {
             updateData: (rowIndex: number, columnId: string, value: any) => {
                 console.log(`table update data: rowIndex=${rowIndex}, columnId=${columnId}, value=${value}`);
-                const material: { id: string;[key: string]: any; } = { id: '' };
-                material.id = materials[rowIndex].id;
-                material[columnId] = value;
-                console.log(material);
-                //     setUdpateData(
-                //         updateData.map(tmp => {
-                //             if (tmp.id === material.id) {
-
-                //             }
-                //             return tmp;
-                //         });
-                // );
+                const updateInfo = { id: materials[rowIndex].id, [columnId]: value };
+                handlePendingUpdate(updateInfo);
             },
+            handleDeleteMaterial,
         },
     });
 
