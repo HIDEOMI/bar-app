@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Table, TableContainer, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react';
 import { Input } from '@mui/material';
@@ -81,6 +81,9 @@ const defaultColumn: Partial<ColumnDef<Material>> = {
 
 /** BasicTable コンポーネント */
 export const BasicTable: React.FC<BasicTableProps> = React.memo(({ materials }) => {
+    const [updateData, setUdpateData] = useState<Material[]>([]);
+
+
     const table = useReactTable<Material>({
         data: materials,
         columns,
@@ -91,7 +94,18 @@ export const BasicTable: React.FC<BasicTableProps> = React.memo(({ materials }) 
         meta: {
             updateData: (rowIndex: number, columnId: string, value: any) => {
                 console.log(`table update data: rowIndex=${rowIndex}, columnId=${columnId}, value=${value}`);
-                console.log(materials[rowIndex]);
+                const material: { id: string;[key: string]: any; } = { id: '' };
+                material.id = materials[rowIndex].id;
+                material[columnId] = value;
+                console.log(material);
+                //     setUdpateData(
+                //         updateData.map(tmp => {
+                //             if (tmp.id === material.id) {
+
+                //             }
+                //             return tmp;
+                //         });
+                // );
             },
         },
     });
