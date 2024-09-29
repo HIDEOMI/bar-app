@@ -40,7 +40,7 @@ const App: React.FC = () => {
                         <Routes>
                             <Route path="/*" element={<MainMenu />} />
                             <Route path="/login" element={<Login />} />
-                            <Route path="/my_orders" element={<MyOrders />} />
+                            <Route path="/myOrders" element={<MyOrders />} />
                             <Route path="/payment" element={<Payment />} />
                             {/* 管理者専用ルート */}
                             <Route path="/admin/*" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
