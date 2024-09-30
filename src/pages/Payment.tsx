@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { getFirestore, writeBatch, doc } from "firebase/firestore";
 import { useAuth } from "../hooks/useAuth";
 import { Order } from "../types/types";
-import { getUnpaidOrdersByUserId } from "../services/orders";
+import { getUnpaidOrdersByUserId, updateOrderStatus } from "../services/orders";
+
 
 const Payment: React.FC = () => {
     const { user } = useAuth();
@@ -10,7 +10,6 @@ const Payment: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [totalUnpaid, setTotalUnpaid] = useState(0);
 
-    const db = getFirestore();
 
     useEffect(() => {
         const fetchUnpaidOrders = async () => {
@@ -18,19 +17,9 @@ const Payment: React.FC = () => {
                 setLoading(true);
                 try {
                     const orders = await getUnpaidOrdersByUserId(user.uid);
-                    const mappedOrders: Order[] = orders.map(order => ({
-                        id: order.id,
-                        totalPrice: order.totalPrice,
-                        products: order.products || [],
-                        note: order.note || "",
-                        status: order.status || "未払い",
-                        createdAt: order.createdAt,
-                        userId: order.userId
-                    }));
+                    setUnpaidOrders(orders);
 
-                    setUnpaidOrders(mappedOrders);
-
-                    const total = mappedOrders.reduce((sum, order) => sum + order.totalPrice, 0);
+                    const total = orders.reduce((sum, order) => sum + order.totalPrice, 0);
                     setTotalUnpaid(total);
                 } catch (error) {
                     console.error("Error fetching unpaid orders:", error);
@@ -45,24 +34,22 @@ const Payment: React.FC = () => {
 
     const handlePayment = async () => {
         if (user) {
-            try {
-                // 未払いの注文のステータスを "支払い済み" に更新
-                const batch = writeBatch(db);
+            const isConfirmed = window.confirm("支払いを完了しますか？");
+            if (isConfirmed) {
+                try {
+                    // 未払いの注文のステータスを "支払い確認" に更新
+                    await Promise.all(unpaidOrders.map(order => updateOrderStatus(order.id, "支払い確認")));
+                    alert("支払いが完了しました！");
 
-                unpaidOrders.forEach(order => {
-                    const orderRef = doc(db, "orders", order.id);
-                    batch.update(orderRef, { status: "支払い済み" });
-                });
-
-                await batch.commit();
-
-                alert("支払いが完了しました！");
-
-                // 未払いの注文一覧をリロード
-                setUnpaidOrders([]);
-                setTotalUnpaid(0);
-            } catch (error) {
-                console.error("支払い処理中にエラーが発生しました:", error);
+                    // 未払いの注文一覧をリロード
+                    setUnpaidOrders(await getUnpaidOrdersByUserId(user.uid));
+                    setTotalUnpaid(0);
+                } catch (error) {
+                    alert("支払い処理中にエラーが発生しました。");
+                    console.error("支払い処理中にエラーが発生しました:", error);
+                }
+            } else {
+                alert("支払いをキャンセルしました。");
             }
         }
     };
@@ -70,6 +57,7 @@ const Payment: React.FC = () => {
     return (
         <div>
             <h1>支払い合計金額: ¥{totalUnpaid.toLocaleString()}</h1>
+            <button onClick={handlePayment}>支払いを完了する</button>
             {loading ? (
                 <p>読み込み中...</p>
             ) : unpaidOrders.length === 0 ? (
@@ -86,7 +74,7 @@ const Payment: React.FC = () => {
                                 <ul>
                                     {order.products.map(product => (
                                         <li key={product.productId}>
-                                            {product.name} - 数量: {product.quantity} - 価格: ¥{product.price}
+                                            {product.name} : {product.quantity}  - 価格: ¥{product.price}
                                         </li>
                                     ))}
                                 </ul>
@@ -94,8 +82,6 @@ const Payment: React.FC = () => {
                             </li>
                         ))}
                     </ul>
-                    <p>支払い合計金額: ¥{totalUnpaid}</p>
-                    <button onClick={handlePayment}>支払いを完了する</button>
                 </div>
             )}
         </div>
