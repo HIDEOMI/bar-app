@@ -5,6 +5,9 @@ import { useAuth } from "../hooks/useAuth";
 import { getProductsByPage, getProductsByCategory } from '../services/products';
 import { createOrder } from "../services/orders";
 
+const CART_STORAGE_KEY = "cartData";
+const CART_EXPIRATION_TIME = 10 * 60 * 1000; // 10分（ミリ秒単位）
+
 
 const MainMenu: React.FC = () => {
     const { user } = useAuth();
@@ -23,6 +26,28 @@ const MainMenu: React.FC = () => {
     const [isAvailable, setIsAvailable] = useState<boolean>(false);
 
     const baseCategories = ['All', 'ウイスキー', 'ジン', 'ウォッカ', 'ラム'];  // カテゴリの選択肢
+
+
+    // ページロード時にカート情報を復元
+    useEffect(() => {
+        const storedCart = localStorage.getItem(CART_STORAGE_KEY);
+        if (storedCart) {
+            const { cart, totalPrice, timestamp } = JSON.parse(storedCart);
+            const now = new Date().getTime();
+            if (now - timestamp < CART_EXPIRATION_TIME) {
+                setCart(cart);
+                setTotalPrice(totalPrice);
+            } else {
+                localStorage.removeItem(CART_STORAGE_KEY); // 期限切れの場合は削除
+            }
+        }
+    }, []);
+
+    // カート情報を更新するたびに `localStorage` に保存
+    useEffect(() => {
+        const timestamp = new Date().getTime();
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify({ cart, totalPrice, timestamp }));
+    }, [cart, totalPrice]);
 
 
     useEffect(() => {
@@ -120,7 +145,6 @@ const MainMenu: React.FC = () => {
     /** 注文を確定してFirestoreに保存するハンドラ */
     const handleOrderSubmit = async () => {
         if (!user) {
-            console.error("ログインしてください");
             setError("ログインしてください")
             return;
         }
@@ -135,44 +159,45 @@ const MainMenu: React.FC = () => {
         }));
 
         if (orderItems.length === 0) {
-            console.error("カートに商品がありません");
             window.alert("カートに商品がありません");
             setIsSubmitting(false);  // 送信終了
             return;
-        } else {
-            const isConfirmed = window.confirm("注文を確定しますか？");
-            if (!isConfirmed) {
-                try {
-                    const orderId = await createOrder(user.uid, orderItems, totalPrice, note);
 
-                    // // 使用した材料の在庫を減らす
-                    // for (const item of cart) {
-                    //     const product = item.product;
-                    //     for (const materialInProduct of product.materials) {
-                    //         const materialId = materialInProduct.id;
-                    //         const material = allMaterials.find((m) => m.id === materialId);
-                    //         const remainingTotalAmount = material && (material.totalAmount - item.quantity * materialInProduct.quantity / material.unitCapacity);
-                    //         if (material) {
-                    //             await updateMaterial(materialId, { totalAmount: remainingTotalAmount });
-                    //         }
-                    //     }
-                    // }
+        }
 
-                    console.log("注文が確定しました！ 注文ID:", orderId);
-                    showMessage("注文が確定しました！");
+        const isConfirmed = window.confirm("注文を確定しますか？");
+        if (!isConfirmed) {
+            try {
+                const orderId = await createOrder(user.uid, orderItems, totalPrice, note);
 
-                    // 注文が確定した後、カートをリセット
-                    setCart([]);
-                    setTotalPrice(0);
-                    setNote("");
-                } catch (error) {
-                    console.error("注文確定時にエラーが発生しました:", error);
-                } finally {
-                    setIsSubmitting(false);  // 送信終了
-                }
-            } else {
-                window.alert("注文をキャンセルしました");
+                // // 使用した材料の在庫を減らす
+                // for (const item of cart) {
+                //     const product = item.product;
+                //     for (const materialInProduct of product.materials) {
+                //         const materialId = materialInProduct.id;
+                //         const material = allMaterials.find((m) => m.id === materialId);
+                //         const remainingTotalAmount = material && (material.totalAmount - item.quantity * materialInProduct.quantity / material.unitCapacity);
+                //         if (material) {
+                //             await updateMaterial(materialId, { totalAmount: remainingTotalAmount });
+                //         }
+                //     }
+                // }
+
+                console.log("注文が確定しました！ 注文ID:", orderId);
+                showMessage("注文が確定しました！");
+
+                // 注文が確定した後、カートをリセット
+                setCart([]);
+                setTotalPrice(0);
+                setNote("");
+                localStorage.removeItem(CART_STORAGE_KEY);
+            } catch (error) {
+                console.error("注文確定時にエラーが発生しました:", error);
+            } finally {
+                setIsSubmitting(false);  // 送信終了
             }
+        } else {
+            window.alert("注文をキャンセルしました");
         }
     };
 
