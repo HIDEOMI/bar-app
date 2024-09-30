@@ -37,7 +37,7 @@ const MainMenu: React.FC = () => {
             }
         };
         fetchDatas();
-    }, [isAvailable, selectedCategory]);
+    }, [isAvailable, selectedCategory, countInPage]);
 
 
     /** 商品リストのフィルタリングと初期ページ設定を行う関数 */
@@ -46,11 +46,16 @@ const MainMenu: React.FC = () => {
         const productsByCategory = await getProductsByCategory(selectedCategory);
 
         // 在庫アリ or ナシでフィルタリング
-        const filteredProducts = isAvailable ? productsByCategory : productsByCategory.filter(product => product.isAvailable);
-        setProducts(filteredProducts);
+        const filteredProducts = isAvailable
+            ? productsByCategory
+            : productsByCategory.filter(product => product.isAvailable);
+        // 準備完了の商品のみ表示
+        const alreadyProducts = filteredProducts.filter(product => product.already === "Done");
 
         // 状態を変えたら1ページに戻る
-        const productsByPage = await getProductsByPage(filteredProducts, 1, countInPage);
+        const productsByPage = await getProductsByPage(alreadyProducts, 1, countInPage);
+
+        setProducts(alreadyProducts);
         setProductsByPage(productsByPage);
         setPage(1);
     };
@@ -181,6 +186,15 @@ const MainMenu: React.FC = () => {
                 <br />
                 <label>※在庫切れ商品も表示する場合はチェックを入れる </label>
                 <input type="checkbox" checked={isAvailable} onChange={handleShowHideOutOfStock} />
+
+                <br />
+                <label>表示件数: </label>
+                <select value={countInPage} onChange={(e) => setCountInPage(Number(e.target.value))}>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                </select>
 
                 {loading ? (
                     <p>読み込み中...</p>
