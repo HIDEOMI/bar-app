@@ -239,7 +239,8 @@ const Products: React.FC = () => {
                 return materialInProduct; // 更新後の `materialInProduct` を返す
             });
 
-            price = Math.ceil(price) + 50;
+            price = Math.ceil(price) + 50;  // 氷代 + 消耗品代
+
             // 更新対象かどうか確認
             if ((product.isAvailable !== isAvailable) || (product.price !== price)) {
                 product.isAvailable = isAvailable;
