@@ -134,35 +134,46 @@ const MainMenu: React.FC = () => {
             price: item.product.price,
         }));
 
-        try {
-            const orderId = await createOrder(user.uid, orderItems, totalPrice, note);
-
-            // // 使用した材料の在庫を減らす
-            // for (const item of cart) {
-            //     const product = item.product;
-            //     for (const materialInProduct of product.materials) {
-            //         const materialId = materialInProduct.id;
-            //         const material = allMaterials.find((m) => m.id === materialId);
-            //         const remainingTotalAmount = material && (material.totalAmount - item.quantity * materialInProduct.quantity / material.unitCapacity);
-            //         if (material) {
-            //             await updateMaterial(materialId, { totalAmount: remainingTotalAmount });
-            //         }
-            //     }
-            // }
-
-            console.log("注文が確定しました！ 注文ID:", orderId);
-            showMessage("注文が確定しました！");
-
-            // 注文が確定した後、カートをリセット
-            setCart([]);
-            setTotalPrice(0);
-            setNote("");
-        } catch (error) {
-            console.error("注文確定時にエラーが発生しました:", error);
-        } finally {
+        if (orderItems.length === 0) {
+            console.error("カートに商品がありません");
+            window.alert("カートに商品がありません");
             setIsSubmitting(false);  // 送信終了
-        }
+            return;
+        } else {
+            const isConfirmed = window.confirm("注文を確定しますか？");
+            if (!isConfirmed) {
+                try {
+                    const orderId = await createOrder(user.uid, orderItems, totalPrice, note);
 
+                    // // 使用した材料の在庫を減らす
+                    // for (const item of cart) {
+                    //     const product = item.product;
+                    //     for (const materialInProduct of product.materials) {
+                    //         const materialId = materialInProduct.id;
+                    //         const material = allMaterials.find((m) => m.id === materialId);
+                    //         const remainingTotalAmount = material && (material.totalAmount - item.quantity * materialInProduct.quantity / material.unitCapacity);
+                    //         if (material) {
+                    //             await updateMaterial(materialId, { totalAmount: remainingTotalAmount });
+                    //         }
+                    //     }
+                    // }
+
+                    console.log("注文が確定しました！ 注文ID:", orderId);
+                    showMessage("注文が確定しました！");
+
+                    // 注文が確定した後、カートをリセット
+                    setCart([]);
+                    setTotalPrice(0);
+                    setNote("");
+                } catch (error) {
+                    console.error("注文確定時にエラーが発生しました:", error);
+                } finally {
+                    setIsSubmitting(false);  // 送信終了
+                }
+            } else {
+                window.alert("注文をキャンセルしました");
+            }
+        }
     };
 
 
@@ -209,9 +220,9 @@ const MainMenu: React.FC = () => {
                                     {productsByPage.map((product) => (
                                         <li key={product.id}>
                                             <img src={product.imageUrl} alt="画像募集中！" width="100" />
-                                            <p>{product.name}</p>
-                                            {product.description} <br />
+                                            <h4>{product.name}</h4>
                                             値段: ¥ {product.price.toLocaleString()} <br />
+                                            {product.description} <br />
                                             在庫: {product.isAvailable ? "在庫あり" : "売り切れ"} <br />
                                             {product.isAvailable && (
                                                 <button onClick={() => handleAddToCart(product)}>
@@ -222,6 +233,16 @@ const MainMenu: React.FC = () => {
                                     ))}
                                 </ul>
 
+                                <br />
+                                <label>表示件数: </label>
+                                <select value={countInPage} onChange={(e) => setCountInPage(Number(e.target.value))}>
+                                    <option value={10}>10</option>
+                                    <option value={20}>20</option>
+                                    <option value={50}>50</option>
+                                    <option value={100}>100</option>
+                                </select>
+
+                                <br />
                                 <button onClick={fetchPrevPage} disabled={page <= 1}>前へ</button>
                                 <button onClick={fetchNextPage}>次へ</button>
 
@@ -229,6 +250,8 @@ const MainMenu: React.FC = () => {
                         )}
                     </div>
                 )}
+
+
             </div>
 
             <h2>カートの中身</h2>
