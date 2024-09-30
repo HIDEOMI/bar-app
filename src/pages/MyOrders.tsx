@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { Timestamp } from 'firebase/firestore';
 import { Order } from "../types/types";
 import { useAuth } from "../hooks/useAuth";
-import { getOrdersByUserId } from "../services/orders";
+import { getMyOrders } from "../services/orders";
 
 
 const MyOrders: React.FC = () => {
@@ -14,20 +15,20 @@ const MyOrders: React.FC = () => {
             if (user) {
                 setLoading(true);
                 try {
-                    const fetchedOrders = await getOrdersByUserId(user.uid);
+                    const myOrders = await getMyOrders(user.uid);
 
-                    // FirestoreからのデータをOrder型にマッピング
-                    const mappedOrders: Order[] = fetchedOrders.map(order => ({
-                        id: order.id,
-                        totalPrice: order.totalPrice,
-                        products: order.products || [],
-                        note: order.note || "",
-                        status: order.status || "未処理",
-                        createdAt: order.createdAt,
-                        userId: order.userId,
-                    }));
+                    // // FirestoreからのデータをOrder型にマッピング
+                    // const mappedOrders: Order[] = myOrders.map(order => ({
+                    //     id: order.id,
+                    //     totalPrice: order.totalPrice,
+                    //     products: order.products || [],
+                    //     note: order.note || "",
+                    //     status: order.status || "未処理",
+                    //     createdAt: order.createdAt,
+                    //     userId: order.userId,
+                    // }));
 
-                    setOrders(mappedOrders);
+                    setOrders(myOrders);
                 } catch (error) {
                     console.error("Error fetching orders:", error);
                 } finally {
@@ -35,9 +36,8 @@ const MyOrders: React.FC = () => {
                 }
             }
         };
-
         fetchOrders();
-    }, [user]);
+    }, []);
 
     return (
         <div>
@@ -48,22 +48,28 @@ const MyOrders: React.FC = () => {
                 <p>注文履歴がありません。</p>
             ) : (
                 <ul>
-                    {orders.map(order => (
-                        <li key={order.id}>
-                            <h3>注文ID: {order.id}</h3>
-                            <p>合計金額: ¥{order.totalPrice}</p>
-                            <p>ステータス: {order.status}</p>
-                            <p>備考: {order.note}</p>
-                            <ul>
-                                {order.products.map(product => (
-                                    <li key={product.productId}>
-                                        {product.name} - 数量: {product.quantity} - 価格: ¥{product.price}
-                                    </li>
-                                ))}
-                            </ul>
-                            <p>注文日時: {order.createdAt.toDate().toLocaleString()}</p>
-                        </li>
-                    ))}
+                    {orders.map(order => {
+                        // createdAt が Firebase Timestamp 型かどうかを確認
+                        const createdAt = order.createdAt instanceof Timestamp
+                            ? order.createdAt.toDate()
+                            : new Date(order.createdAt.seconds * 1000); // もし Timestamp でなければ Date オブジェクトに変換
+
+                        return (
+                            <li key={order.id}>
+                                <h3>注文日時: {createdAt.toLocaleString()}</h3>
+                                <p>ステータス: {order.status}</p>
+                                <p>合計金額: ¥{order.totalPrice.toLocaleString()}</p>
+                                <ul>
+                                    {order.products.map(product => (
+                                        <li key={product.productId}>
+                                            {product.name} : {product.quantity} - 価格: ¥{product.price.toLocaleString()}
+                                        </li>
+                                    ))}
+                                </ul>
+                                <p>備考: {order.note}</p>
+                            </li>
+                        );
+                    })}
                 </ul>
             )}
         </div>

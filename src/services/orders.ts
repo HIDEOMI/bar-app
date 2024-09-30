@@ -63,13 +63,13 @@ export const getUnpaidOrdersByUserId = async (userId: string) => {
 };
 
 /** ユーザーの注文履歴を取得する関数 */
-export const getOrdersByUserId = async (userId: string) => {
-    const ordersQuery = query(
+export const getMyOrders = async (userId: string) => {
+    const q = query(
         collection(db, collectionName),
         where("userId", "==", userId),
-        orderBy('createdAt', 'asc')
+        orderBy('createdAt', 'desc')
     );
-    const querySnapshot = await getDocs(ordersQuery);
+    const querySnapshot = await getDocs(q);
 
     return querySnapshot.docs.map(doc => {
         const data = doc.data();

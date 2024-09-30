@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { Timestamp } from 'firebase/firestore';
 import { Order } from "../../types/types";
 import { getAllOrders, updateOrderStatus } from '../../services/orders';
 import { getUserNameFrom } from '../../services/users';
-import { Timestamp } from 'firebase/firestore';
 
 const makeUserIdToNames = async (orders: Order[]) => {
     const userIdToNames: { [key: string]: string } = {};
@@ -54,7 +54,7 @@ const Orders: React.FC = () => {
 
 
     /** フィルタリングされた注文を取得 */
-    const filteredOrders
+    const filteredOrders 
         = selectedStatus === "全て" ? orders
             : orders.filter(order => order.status === selectedStatus);
 
@@ -67,6 +67,7 @@ const Orders: React.FC = () => {
                 <option value="全て">全て</option>
                 <option value="未処理">未処理</option>
                 <option value="未払い">未払い</option>
+                <option value="支払い確認">支払い確認</option>
                 <option value="完了">完了</option>
             </select>
 
@@ -92,7 +93,7 @@ const Orders: React.FC = () => {
                                         <ul>
                                             {order.products.map(product => (
                                                 <li key={product.productId}>
-                                                    {product.name} - 数量: {product.quantity} - 価格: ¥{product.price.toLocaleString()}
+                                                    {product.name} : {product.quantity} - 価格: ¥{product.price.toLocaleString()}
                                                 </li>
                                             ))}
                                         </ul>
