@@ -35,9 +35,12 @@ const MainMenu: React.FC = () => {
             const { cart, totalPrice, timestamp } = JSON.parse(storedCart);
             const now = new Date().getTime();
             if (now - timestamp < CART_EXPIRATION_TIME) {
+                console.log("カート情報を復元しました");
+                console.log(cart);
                 setCart(cart);
                 setTotalPrice(totalPrice);
             } else {
+                console.log("カート情報が期限切れのため、初期化");
                 localStorage.removeItem(CART_STORAGE_KEY); // 期限切れの場合は削除
             }
         }
@@ -45,8 +48,19 @@ const MainMenu: React.FC = () => {
 
     // カート情報を更新するたびに `localStorage` に保存
     useEffect(() => {
-        const timestamp = new Date().getTime();
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify({ cart, totalPrice, timestamp }));
+        const saveCartToStorage = () => {
+            try {
+                const timestamp = new Date().getTime();
+                const cartData = { cart, totalPrice, timestamp };
+                localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartData));
+                console.log("カート情報を保存しました");
+                const storedCart = localStorage.getItem(CART_STORAGE_KEY);
+                console.log(storedCart);
+            } catch (error) {
+                console.error("カート情報の保存に失敗しました:", error);
+            }
+        };
+        saveCartToStorage();
     }, [cart, totalPrice]);
 
 
@@ -288,6 +302,27 @@ const MainMenu: React.FC = () => {
                     {cart.map(item => (
                         <li key={item.product.id}>
                             {item.product.name} - 数量: {item.quantity}
+                            {/* 数量を増減させるボタンを追加 */}
+                            <button onClick={() => {
+                                setCart(cart.map(i =>
+                                    i.product.id === item.product.id
+                                        ? { ...i, quantity: i.quantity - 1 }
+                                        : i
+                                ));
+                                setTotalPrice(totalPrice - item.product.price);
+                            }}>
+                                -
+                            </button>
+                            <button onClick={() => {
+                                setCart(cart.map(i =>
+                                    i.product.id === item.product.id
+                                        ? { ...i, quantity: i.quantity + 1 }
+                                        : i
+                                ));
+                                setTotalPrice(totalPrice + item.product.price);
+                            }}>
+                                +
+                            </button>
                         </li>
                     ))}
                 </ul>
