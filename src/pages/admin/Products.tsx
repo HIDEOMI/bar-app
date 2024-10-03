@@ -3,6 +3,7 @@ import Select from 'react-select';
 import { Product, Material, MaterialInProduct } from '../../types/types';
 import { getAllProducts, addProduct, updateProduct, deleteProduct } from '../../services/products';
 import { getAllMaterials } from '../../services/materials';
+import { ProductTable } from '../../components/ProductTable';
 
 
 const Products: React.FC = () => {
@@ -13,7 +14,8 @@ const Products: React.FC = () => {
     const [allProducts, setAllProducts] = useState<Product[]>([]);
     const [allMaterials, setAllMaterials] = useState<Material[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-    const [selectedCategory, setSelectedCategory] = useState<string>('All');  // 選択されたカテゴリ
+    // const [selectedCategory, setSelectedCategory] = useState<string>('All');  // 選択されたカテゴリ
+    const [selectedCategory, setSelectedCategory] = useState<string>('ジン');  // 選択されたカテゴリ
     const [selectedMaterials, setSelectedMaterials] = useState<MaterialInProduct[]>([]);
     const [formProduct, setFormProduct] = useState<Product>({
         id: "",
@@ -39,6 +41,7 @@ const Products: React.FC = () => {
         word: "",
         date: "",
     });
+    const [pendingUpdates, setPendingUpdates] = useState<{ [key: string]: any; id: string }[]>([]);
 
     const categoriesList = ['カクテル', 'ビール', 'ワイン'];  // カテゴリの選択肢
     const baseList = ['ウイスキー', 'ジン', 'ウォッカ', 'ラム'];  // ベースの選択肢
@@ -246,7 +249,7 @@ const Products: React.FC = () => {
                 return materialInProduct; // 更新後の `materialInProduct` を返す
             });
 
-            price = Math.ceil(price) + 50;  // 氷代 + 消耗品代
+            price = Math.ceil(price) + 40;  // 氷代 + 消耗品代
 
             // 更新対象かどうか確認
             if ((product.isAvailable !== isAvailable) || (product.price !== price)) {
@@ -255,6 +258,7 @@ const Products: React.FC = () => {
                 updateProduct(product.id, {
                     isAvailable: product.isAvailable,
                     price: product.price,
+                    name: product.name,
                 });
                 console.log(`${product.name} の情報をFirestoreに更新しました(` + product.id + ")");
             }
@@ -262,6 +266,7 @@ const Products: React.FC = () => {
         });
 
         setAllProducts(updatedProducts);
+        window.confirm('商品の在庫状況と値段を最新化しました。');
     };
 
     /** カテゴリフィルタの変更ハンドラ */
@@ -277,6 +282,12 @@ const Products: React.FC = () => {
         }
     };
 
+    /** 材料の値を変更したときに変更内容を保持するハンドラ */
+    const handlePendingUpdate = async (updateInfo: { [key: string]: any; id: string; }) => {
+        setPendingUpdates([...pendingUpdates, updateInfo]);
+        console.log(pendingUpdates);
+    };
+
     /** 商品を編集するハンドラ */
     const handleEditProduct = (product: Product) => {
         setFormProduct(product);  // 編集モードで既存データをセット
@@ -285,7 +296,7 @@ const Products: React.FC = () => {
     };
 
     /** 商品を削除するハンドラ */
-    const handleDeleteProduct = async (id: string) => {
+    const handleDeleteRow = async (id: string) => {
         const isConfirmed = window.confirm('本当に削除しますか？');
         if (!isConfirmed) {
             window.alert('キャンセルしました。');
@@ -442,13 +453,19 @@ const Products: React.FC = () => {
                         {filteredProducts.length === 0 ? (
                             <p>該当する商品がありません。</p>
                         ) : (
-                            <ul>
-                                {filteredProducts.map(product => (
-                                    <li key={product.id}>
-                                        <>
-                                            {/* {console.log(product.name)} */}
-                                            {/* {console.log(product.id)} */}
-                                            <h4>{product.name}</h4>
+                            <>
+                                <ProductTable
+                                    products={filteredProducts}
+                                    handlePendingUpdate={handlePendingUpdate}
+                                    handleDeleteRow={handleDeleteRow}
+                                />
+                                {/* <ul> */}
+                                {/* {filteredProducts.map(product => ( */}
+                                {/* <li key={product.id}> */}
+                                {/* <> */}
+                                {/* {console.log(product.name)} */}
+                                {/* {console.log(product.id)} */}
+                                {/* <h4>{product.name}</h4>
                                             値段: ¥ {product.price.toLocaleString()} <br />
                                             カテゴリ: {product.categories.join(', ')} <br />
                                             ベース: {product.bases.join(', ')} <br />
@@ -459,11 +476,12 @@ const Products: React.FC = () => {
                                             レシピ: {product.recipe} <br />
                                             準備完了： {product.already} <br />
                                             <button onClick={() => handleEditProduct(product)}>編集</button>
-                                            <button onClick={() => handleDeleteProduct(product.id)}>削除</button>
-                                        </>
-                                    </li>
-                                ))}
-                            </ul>
+                                            <button onClick={() => handleDeleteRow(product.id)}>削除</button> */}
+                                {/* </> */}
+                                {/* </li> */}
+                                {/* ))} */}
+                                {/* </ul> */}
+                            </>
                         )}
                     </div>
                 )}
