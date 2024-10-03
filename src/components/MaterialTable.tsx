@@ -36,7 +36,6 @@ const columns: ColumnDef<Material, any>[] = [
     {
         accessorKey: 'name',
         header: '名前',
-        size: 500,
     },
     {
         accessorKey: 'totalAmount',

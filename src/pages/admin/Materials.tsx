@@ -31,8 +31,8 @@ const Materials: React.FC = () => {
         const fetchDatas = async () => {
             setLoading(true);
             try {
-                const allMaterials = await getAllMaterials();
-                setMaterials(allMaterials);
+                const filteredMaterials = await getMaterialsByCategory(selectedCategory);
+                setMaterials(filteredMaterials);
             } catch (error) {
                 console.error("Error fetching datas: ", error);
             } finally {
@@ -133,6 +133,14 @@ const Materials: React.FC = () => {
      * - 一度連想配列のオブジェクトを構築、同じIDのものをまとめてJSON形式で取得、最後にPromise.allで一括更新する
      */
     const handleSaveChanges = async () => {
+        const isConfirmed = window.confirm('変更内容を保存しますか？');
+        if (!isConfirmed) {
+            window.confirm('変更をキャンセルしました');
+            const allMaterials = await getAllMaterials();
+            setMaterials(allMaterials);
+            return;
+        }
+
         const updateData = pendingUpdates.reduce((acc, update) => {
             const { id, ...data } = update;
             if (!acc[id]) {
