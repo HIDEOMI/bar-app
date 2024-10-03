@@ -10,14 +10,14 @@ import { Material } from '../types/types';
 declare module '@tanstack/table-core' {
     interface TableMeta<TData extends RowData> {
         updateData: (rowIndex: number, columnId: string, value: unknown) => void;
-        handleDeleteMaterial: (id: string) => void;
+        handleDeleteRow: (id: string) => void;
     }
 }
 
-export interface BasicTableProps {
+interface BasicTableProps {
     materials: Material[];
     handlePendingUpdate: (updateInfo: { [key: string]: any; id: string; }) => Promise<void>;
-    handleDeleteMaterial: (id: string) => Promise<void>;
+    handleDeleteRow: (id: string) => Promise<void>;
 }
 
 /** カラム定義 */
@@ -26,7 +26,7 @@ const columns: ColumnDef<Material, any>[] = [
         id: 'delete',
         header: '削除',
         cell: ({ row, table }) => (
-            <button onClick={() => table.options.meta?.handleDeleteMaterial(row.original.id)}>削除</button>
+            <button onClick={() => table.options.meta?.handleDeleteRow(row.original.id)}>削除</button>
         ),
     },
     {
@@ -96,8 +96,8 @@ const defaultColumn: Partial<ColumnDef<Material>> = {
 };
 
 
-/** BasicTable コンポーネント */
-export const BasicTable: React.FC<BasicTableProps> = React.memo(({ materials, handlePendingUpdate, handleDeleteMaterial }) => {
+/** MaterialTable コンポーネント */
+export const MaterialTable: React.FC<BasicTableProps> = React.memo(({ materials, handlePendingUpdate, handleDeleteRow }) => {
     // const [updateData, setUdpateData] = useState<{ [key: string]: any; id: string }[]>([]);
 
     const table = useReactTable<Material>({
@@ -113,7 +113,7 @@ export const BasicTable: React.FC<BasicTableProps> = React.memo(({ materials, ha
                 const updateInfo = { id: materials[rowIndex].id, [columnId]: value };
                 handlePendingUpdate(updateInfo);
             },
-            handleDeleteMaterial,
+            handleDeleteRow,
         },
     });
 

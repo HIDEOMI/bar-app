@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Material } from "../../types/types"
 import { getAllMaterials, addMaterial, updateMaterial, deleteMaterial, getMaterialsByCategory } from '../../services/materials';
-import { BasicTable } from '../../components/MaterialTable';
+import { MaterialTable } from '../../components/MaterialTable';
 
 
 const Materials: React.FC = () => {
@@ -167,7 +167,7 @@ const Materials: React.FC = () => {
      * - 削除実行前に確認メッセージを表示
      * - キャンセルボタンが押された場合、その旨メッセージ表示
      */
-    const handleDeleteMaterial = async (id: string) => {
+    const handleDeleteRow = async (id: string) => {
         const isConfirmed = window.confirm('本当に削除しますか？');
         if (isConfirmed) {
             await deleteMaterial(id);
@@ -278,10 +278,10 @@ const Materials: React.FC = () => {
                         ) : (
                             <>
                                 <button onClick={handleSaveChanges}>全体を更新する</button>
-                                <BasicTable
+                                <MaterialTable
                                     materials={materials}
                                     handlePendingUpdate={handlePendingUpdate}
-                                    handleDeleteMaterial={handleDeleteMaterial}
+                                    handleDeleteRow={handleDeleteRow}
                                 />
                             </>
                         )}
