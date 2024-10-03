@@ -54,8 +54,6 @@ const MainMenu: React.FC = () => {
                 const cartData = { cart, totalPrice, timestamp };
                 localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartData));
                 console.log("カート情報を保存しました");
-                const storedCart = localStorage.getItem(CART_STORAGE_KEY);
-                console.log(storedCart);
             } catch (error) {
                 console.error("カート情報の保存に失敗しました:", error);
             }
