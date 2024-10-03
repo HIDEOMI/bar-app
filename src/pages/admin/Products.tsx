@@ -212,9 +212,16 @@ const Products: React.FC = () => {
     /** 商品更新ボタンを押したときのハンドラ */
     const handleUpdateProducts = async () => {
         console.log("==== 商品の在庫状況と値段を最新化 ====");
+        const isConfirmed = window.confirm('商品の在庫状況と値段を最新化しますか？');
+        if (!isConfirmed) {
+            window.alert('キャンセルしました。');
+            return;
+        }
+
         const allMaterials = await getAllMaterials();
         /** 在庫状況と値段を最新化した Product[] */
         const updatedProducts = allProducts.map(product => {
+            console.log(product.name);
             // 商品に含まれる材料から在庫と値段を最新化
             let isAvailable = true;
             let price = 0;
@@ -279,6 +286,12 @@ const Products: React.FC = () => {
 
     /** 商品を削除するハンドラ */
     const handleDeleteProduct = async (id: string) => {
+        const isConfirmed = window.confirm('本当に削除しますか？');
+        if (!isConfirmed) {
+            window.alert('キャンセルしました。');
+            return;
+        }
+
         await deleteProduct(id);
         showMessage('商品を削除しました');
         const data = await getAllProducts();
