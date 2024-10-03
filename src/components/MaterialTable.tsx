@@ -69,13 +69,20 @@ const defaultColumn: Partial<ColumnDef<Material>> = {
     cell: React.memo(({ getValue, row: { index }, column: { id }, table }) => {
         const initialValue = getValue();
         const [value, setValue] = useState(initialValue);
+        const [isEdited, setIsEdited] = useState(false);  // 編集状態を管理
+
 
         const onBlur = () => {
-            table.options.meta?.updateData(index, id, value);
+            if (value !== initialValue) { // 値が変更された場合
+                setIsEdited(true);
+                table.options.meta?.updateData(index, id, value);
+            }
         };
+
 
         useEffect(() => {
             setValue(initialValue);
+            setIsEdited(false); // 初期値に戻った場合は編集状態をリセット
         }, [initialValue]);
 
         return (
@@ -83,6 +90,7 @@ const defaultColumn: Partial<ColumnDef<Material>> = {
                 value={value as string}
                 onChange={(e) => setValue(e.target.value)}
                 onBlur={onBlur}
+                style={{ color: isEdited ? 'red' : 'inherit' }} // 編集された場合に赤くする
             />
         );
     }),

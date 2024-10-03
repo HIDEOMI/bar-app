@@ -444,6 +444,7 @@ const Products: React.FC = () => {
                                             材料: {product.materials.map(m => m.name).join(', ')} <br />
                                             在庫: {product.isAvailable ? 'あり' : 'なし'} <br />
                                             レシピ: {product.recipe} <br />
+                                            準備完了： {product.already} <br />
                                             <button onClick={() => handleEditProduct(product)}>編集</button>
                                             <button onClick={() => handleDeleteProduct(product.id)}>削除</button>
                                         </>

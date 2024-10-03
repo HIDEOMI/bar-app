@@ -5,6 +5,9 @@ import { useAuth } from "../hooks/useAuth";
 import { getProductsByPage, getProductsByCategory } from '../services/products';
 import { createOrder } from "../services/orders";
 
+const CART_STORAGE_KEY = "cartData";
+const CART_EXPIRATION_TIME = 10 * 60 * 1000; // 10分（ミリ秒単位）
+
 
 const MainMenu: React.FC = () => {
     const { user } = useAuth();
@@ -25,6 +28,42 @@ const MainMenu: React.FC = () => {
     const baseCategories = ['All', 'ウイスキー', 'ジン', 'ウォッカ', 'ラム'];  // カテゴリの選択肢
 
 
+    // ページロード時にカート情報を復元
+    useEffect(() => {
+        const storedCart = localStorage.getItem(CART_STORAGE_KEY);
+        if (storedCart) {
+            const { cart, totalPrice, timestamp } = JSON.parse(storedCart);
+            const now = new Date().getTime();
+            if (now - timestamp < CART_EXPIRATION_TIME) {
+                console.log("カート情報を復元しました");
+                console.log(cart);
+                setCart(cart);
+                setTotalPrice(totalPrice);
+            } else {
+                console.log("カート情報が期限切れのため、初期化");
+                localStorage.removeItem(CART_STORAGE_KEY); // 期限切れの場合は削除
+            }
+        }
+    }, []);
+
+    // カート情報を更新するたびに `localStorage` に保存
+    useEffect(() => {
+        const saveCartToStorage = () => {
+            try {
+                const timestamp = new Date().getTime();
+                const cartData = { cart, totalPrice, timestamp };
+                localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartData));
+                console.log("カート情報を保存しました");
+                const storedCart = localStorage.getItem(CART_STORAGE_KEY);
+                console.log(storedCart);
+            } catch (error) {
+                console.error("カート情報の保存に失敗しました:", error);
+            }
+        };
+        saveCartToStorage();
+    }, [cart, totalPrice]);
+
+
     useEffect(() => {
         const fetchDatas = async () => {
             setLoading(true);
@@ -37,7 +76,7 @@ const MainMenu: React.FC = () => {
             }
         };
         fetchDatas();
-    }, [isAvailable, selectedCategory]);
+    }, [isAvailable, selectedCategory, countInPage]);
 
 
     /** 商品リストのフィルタリングと初期ページ設定を行う関数 */
@@ -46,11 +85,16 @@ const MainMenu: React.FC = () => {
         const productsByCategory = await getProductsByCategory(selectedCategory);
 
         // 在庫アリ or ナシでフィルタリング
-        const filteredProducts = isAvailable ? productsByCategory : productsByCategory.filter(product => product.isAvailable);
-        setProducts(filteredProducts);
+        const filteredProducts = isAvailable
+            ? productsByCategory
+            : productsByCategory.filter(product => product.isAvailable);
+        // 準備完了の商品のみ表示
+        const alreadyProducts = filteredProducts.filter(product => product.already === "Done");
 
         // 状態を変えたら1ページに戻る
-        const productsByPage = await getProductsByPage(filteredProducts, 1, countInPage);
+        const productsByPage = await getProductsByPage(alreadyProducts, 1, countInPage);
+
+        setProducts(alreadyProducts);
         setProductsByPage(productsByPage);
         setPage(1);
     };
@@ -115,7 +159,6 @@ const MainMenu: React.FC = () => {
     /** 注文を確定してFirestoreに保存するハンドラ */
     const handleOrderSubmit = async () => {
         if (!user) {
-            console.error("ログインしてください");
             setError("ログインしてください")
             return;
         }
@@ -129,35 +172,47 @@ const MainMenu: React.FC = () => {
             price: item.product.price,
         }));
 
-        try {
-            const orderId = await createOrder(user.uid, orderItems, totalPrice, note);
-
-            // // 使用した材料の在庫を減らす
-            // for (const item of cart) {
-            //     const product = item.product;
-            //     for (const materialInProduct of product.materials) {
-            //         const materialId = materialInProduct.id;
-            //         const material = allMaterials.find((m) => m.id === materialId);
-            //         const remainingTotalAmount = material && (material.totalAmount - item.quantity * materialInProduct.quantity / material.unitCapacity);
-            //         if (material) {
-            //             await updateMaterial(materialId, { totalAmount: remainingTotalAmount });
-            //         }
-            //     }
-            // }
-
-            console.log("注文が確定しました！ 注文ID:", orderId);
-            showMessage("注文が確定しました！");
-
-            // 注文が確定した後、カートをリセット
-            setCart([]);
-            setTotalPrice(0);
-            setNote("");
-        } catch (error) {
-            console.error("注文確定時にエラーが発生しました:", error);
-        } finally {
+        if (orderItems.length === 0) {
+            window.alert("カートに商品がありません");
             setIsSubmitting(false);  // 送信終了
+            return;
+
         }
 
+        const isConfirmed = window.confirm("注文を確定しますか？");
+        if (!isConfirmed) {
+            try {
+                const orderId = await createOrder(user.uid, orderItems, totalPrice, note);
+
+                // // 使用した材料の在庫を減らす
+                // for (const item of cart) {
+                //     const product = item.product;
+                //     for (const materialInProduct of product.materials) {
+                //         const materialId = materialInProduct.id;
+                //         const material = allMaterials.find((m) => m.id === materialId);
+                //         const remainingTotalAmount = material && (material.totalAmount - item.quantity * materialInProduct.quantity / material.unitCapacity);
+                //         if (material) {
+                //             await updateMaterial(materialId, { totalAmount: remainingTotalAmount });
+                //         }
+                //     }
+                // }
+
+                console.log("注文が確定しました！ 注文ID:", orderId);
+                showMessage("注文が確定しました！");
+
+                // 注文が確定した後、カートをリセット
+                setCart([]);
+                setTotalPrice(0);
+                setNote("");
+                localStorage.removeItem(CART_STORAGE_KEY);
+            } catch (error) {
+                console.error("注文確定時にエラーが発生しました:", error);
+            } finally {
+                setIsSubmitting(false);  // 送信終了
+            }
+        } else {
+            window.alert("注文をキャンセルしました");
+        }
     };
 
 
@@ -182,6 +237,15 @@ const MainMenu: React.FC = () => {
                 <label>※在庫切れ商品も表示する場合はチェックを入れる </label>
                 <input type="checkbox" checked={isAvailable} onChange={handleShowHideOutOfStock} />
 
+                <br />
+                <label>表示件数: </label>
+                <select value={countInPage} onChange={(e) => setCountInPage(Number(e.target.value))}>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                </select>
+
                 {loading ? (
                     <p>読み込み中...</p>
                 ) : (
@@ -195,9 +259,9 @@ const MainMenu: React.FC = () => {
                                     {productsByPage.map((product) => (
                                         <li key={product.id}>
                                             <img src={product.imageUrl} alt="画像募集中！" width="100" />
-                                            <p>{product.name}</p>
-                                            {product.description} <br />
+                                            <h4>{product.name}</h4>
                                             値段: ¥ {product.price.toLocaleString()} <br />
+                                            {product.description} <br />
                                             在庫: {product.isAvailable ? "在庫あり" : "売り切れ"} <br />
                                             {product.isAvailable && (
                                                 <button onClick={() => handleAddToCart(product)}>
@@ -208,6 +272,16 @@ const MainMenu: React.FC = () => {
                                     ))}
                                 </ul>
 
+                                <br />
+                                <label>表示件数: </label>
+                                <select value={countInPage} onChange={(e) => setCountInPage(Number(e.target.value))}>
+                                    <option value={10}>10</option>
+                                    <option value={20}>20</option>
+                                    <option value={50}>50</option>
+                                    <option value={100}>100</option>
+                                </select>
+
+                                <br />
                                 <button onClick={fetchPrevPage} disabled={page <= 1}>前へ</button>
                                 <button onClick={fetchNextPage}>次へ</button>
 
@@ -215,6 +289,8 @@ const MainMenu: React.FC = () => {
                         )}
                     </div>
                 )}
+
+
             </div>
 
             <h2>カートの中身</h2>
@@ -226,6 +302,27 @@ const MainMenu: React.FC = () => {
                     {cart.map(item => (
                         <li key={item.product.id}>
                             {item.product.name} - 数量: {item.quantity}
+                            {/* 数量を増減させるボタンを追加 */}
+                            <button onClick={() => {
+                                setCart(cart.map(i =>
+                                    i.product.id === item.product.id
+                                        ? { ...i, quantity: i.quantity - 1 }
+                                        : i
+                                ));
+                                setTotalPrice(totalPrice - item.product.price);
+                            }}>
+                                -
+                            </button>
+                            <button onClick={() => {
+                                setCart(cart.map(i =>
+                                    i.product.id === item.product.id
+                                        ? { ...i, quantity: i.quantity + 1 }
+                                        : i
+                                ));
+                                setTotalPrice(totalPrice + item.product.price);
+                            }}>
+                                +
+                            </button>
                         </li>
                     ))}
                 </ul>
