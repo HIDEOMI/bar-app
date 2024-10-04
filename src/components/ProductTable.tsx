@@ -3,7 +3,7 @@ import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack
 import { Table, TableContainer, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react';
 import { Input } from '@mui/material';
 import { RowData } from '@tanstack/table-core';
-import { Material } from '../types/types';
+import { Product, MaterialInProduct } from '../types/types';
 
 
 /** TableMeta を拡張して updateData を定義 */
@@ -15,13 +15,13 @@ declare module '@tanstack/table-core' {
 }
 
 interface BasicTableProps {
-    materials: Material[];
+    products: Product[];
     handlePendingUpdate: (updateInfo: { [key: string]: any; id: string; }) => Promise<void>;
     handleDeleteRow: (id: string) => Promise<void>;
 }
 
 /** カラム定義 */
-const columns: ColumnDef<Material, any>[] = [
+const columns: ColumnDef<Product, any>[] = [
     {
         id: 'delete',
         header: '削除',
@@ -29,42 +29,44 @@ const columns: ColumnDef<Material, any>[] = [
             <button onClick={() => table.options.meta?.handleDeleteRow(row.original.id)}>削除</button>
         ),
     },
-    {
-        accessorKey: 'category',
-        header: 'カテゴリ',
-    },
+    // {
+    //     accessorKey: 'category',
+    //     header: 'カテゴリ',
+    // },
     {
         accessorKey: 'name',
         header: '名前',
+        size: 500,
     },
     {
-        accessorKey: 'totalAmount',
-        header: '数量',
+        accessorKey: 'price',
+        header: '値段',
+    },
+    // {
+    //     accessorKey: 'bases',
+    //     header: 'ベース',
+    //     cell: ({ row }) => row.original.bases.join(', '),
+    // },
+    // {
+    //     accessorKey: 'recipe',
+    //     header: 'レシピ',
+    // },
+    {
+        accessorKey: 'already',
+        header: '準備完了',
     },
     {
-        accessorKey: 'teiban',
-        header: '定番',
+        accessorKey: 'isAvailable',
+        header: '在庫あり',
     },
-    {
-        accessorKey: 'unitPrice',
-        header: '単価',
-    },
-    {
-        accessorKey: 'unitCapacity',
-        header: '単位量',
-    },
-    {
-        accessorKey: 'note',
-        header: '備考',
-    },
-    {
-        accessorKey: 'url',
-        header: 'URL',
-    },
+    // {
+    //     accessorKey: 'note',
+    //     header: '備考',
+    // },
 ];
 
 /** デフォルトカラムの定義 */
-const defaultColumn: Partial<ColumnDef<Material>> = {
+const defaultColumn: Partial<ColumnDef<Product>> = {
     cell: React.memo(({ getValue, row: { index }, column: { id }, table }) => {
         const initialValue = getValue();
         const [value, setValue] = useState(initialValue);
@@ -96,12 +98,12 @@ const defaultColumn: Partial<ColumnDef<Material>> = {
 };
 
 
-/** MaterialTable コンポーネント */
-export const MaterialTable: React.FC<BasicTableProps> = React.memo(({ materials, handlePendingUpdate, handleDeleteRow }) => {
+/** BasicTable コンポーネント */
+export const ProductTable: React.FC<BasicTableProps> = React.memo(({ products, handlePendingUpdate, handleDeleteRow }) => {
     // const [updateData, setUdpateData] = useState<{ [key: string]: any; id: string }[]>([]);
 
-    const table = useReactTable<Material>({
-        data: materials,
+    const table = useReactTable<Product>({
+        data: products,
         columns,
         defaultColumn,
         getCoreRowModel: getCoreRowModel(),
@@ -110,7 +112,7 @@ export const MaterialTable: React.FC<BasicTableProps> = React.memo(({ materials,
         meta: {
             updateData: (rowIndex: number, columnId: string, value: any) => {
                 console.log(`table update data: rowIndex=${rowIndex}, columnId=${columnId}, value=${value}`);
-                const updateInfo = { id: materials[rowIndex].id, [columnId]: value };
+                const updateInfo = { id: products[rowIndex].id, [columnId]: value };
                 handlePendingUpdate(updateInfo);
             },
             handleDeleteRow,
