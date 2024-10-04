@@ -2,16 +2,20 @@ service cloud.firestore {
   match /databases/{database}/documents {
 // 管理者かどうか判断するカスタム関数
     function isOwner() {
-    	return request.auth != null &&
-    		exists(/databases/$(database)/documents/owners/$(request.auth.uid));
+    	return exists(/databases/$(database)/documents/owners/$(request.auth.uid));
     }
 
 // 認可ユーザかどうか判断するカスタム関数
     function isFriend() {
-    	return request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isFriend == true;
+    	return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "user"
+        || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "engineer";
+
     }
 
+// 開発者かどうか判断するカスタム関数
+    function isEngineer() {
+    	return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "engineer";
+    }
 
 
 // owners コレクションに対して適用されるルール
@@ -40,22 +44,30 @@ service cloud.firestore {
 
 // materials コレクションに対して適用されるルール
 		match /materials/{document=**} {
-      allow write, read: if isOwner();  // 管理者はすべてのフィールドを更新可
     	allow read: if isFriend();  // 認証認可済みユーザーのみ読み込み可能
+      allow write, read: if isOwner();  // 管理者はすべてのフィールドを更新可
+      allow delete: if isOwner();  // 管理者はすべてのフィールドを更新可
     }
 
 // products コレクションに対して適用されるルール
 		match /products/{document=**} {
-      allow write, read: if isOwner();  // 管理者はすべてのフィールドを更新可
     	allow read: if isFriend();  // 認証認可済みユーザーのみ読み込み可能
+      allow write, read: if isOwner();  // 管理者はすべてのフィールドを更新可
     }
 
 // orders コレクションに対して適用されるルール
 		match /orders/{orderId} {
-      allow write, read: if isOwner();  // 管理者はすべてのフィールドを更新可
+    	allow read: if request.auth.uid == resource.data.userId || isOwner() || isEngineer();  // 自分の注文のみ閲覧可能      
+      allow write: if isOwner();
       allow create: if isFriend() && resource.data.userId;  // 認証認可済みユーザーが自分の注文のみ作成可能 
-    	allow read: if request.auth.uid == resource.data.userId;  // 自分の注文のみ閲覧可能      
     }
+    
+// updateTimestamp コレクションに対して適用されるルール
+		match /updateTimestamp/{document=**} {
+      allow read: if isOwner() || isFriend();
+      allow update: if isOwner();
+    }
+
 
 // それ以外のコレクションに適用されるルール（通常のアクセスルールを設定）
     // match /{document=**} {
