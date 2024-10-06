@@ -86,8 +86,9 @@ const MainMenu: React.FC = () => {
         const filteredProducts = isAvailable
             ? productsByCategory
             : productsByCategory.filter(product => product.isAvailable);
+
         // 準備完了の商品のみ表示
-        const alreadyProducts = filteredProducts.filter(product => product.already === "Done");
+        const alreadyProducts = filteredProducts.filter(product => (product.already === "Ready"));
 
         // 状態を変えたら1ページに戻る
         const productsByPage = await getProductsByPage(alreadyProducts, 1, countInPage);
