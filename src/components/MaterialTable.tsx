@@ -28,34 +28,42 @@ const columns: ColumnDef<Material, any>[] = [
         cell: ({ row, table }) => (
             <button onClick={() => table.options.meta?.handleDeleteRow(row.original.id)}>削除</button>
         ),
+        size: 50,
     },
     {
         accessorKey: 'category',
         header: 'カテゴリ',
+        size: 70,
     },
     {
         accessorKey: 'name',
         header: '名前',
+        size: 200,
     },
     {
         accessorKey: 'totalAmount',
         header: '数量',
+        size: 50,
     },
     {
         accessorKey: 'teiban',
         header: '定番',
+        size: 50,
     },
     {
         accessorKey: 'unitPrice',
         header: '単価',
+        size: 50,
     },
     {
         accessorKey: 'unitCapacity',
         header: '単位量',
+        size: 50,
     },
     {
         accessorKey: 'note',
         header: '備考',
+        size: 200,
     },
     {
         accessorKey: 'url',
@@ -118,13 +126,23 @@ export const MaterialTable: React.FC<BasicTableProps> = React.memo(({ materials,
     });
 
     return (
-        <TableContainer>
+        <TableContainer
+            style={{ maxHeight: '800px', overflowY: 'auto' }}  // コンテナにスクロールを追加
+        >
             <Table>
                 <Thead>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <Tr key={headerGroup.id}>
                             {headerGroup.headers.map((header) => (
-                                <Th key={header.id}>
+                                <Th
+                                    key={header.id}
+                                    width={`${header.column.columnDef.size}px`}
+                                    style={{ fontSize: '30px !important' }}  // style オブジェクトで指定
+                                    position="sticky"  // ヘッダーを固定
+                                    top={0}  // スクロール時の固定位置
+                                    zIndex={1}  // ヘッダーがスクロール中に他の要素より前面に表示されるように
+                                    backgroundColor="white"  // 背景色を設定
+                                >
                                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                                 </Th>
                             ))}
@@ -135,7 +153,12 @@ export const MaterialTable: React.FC<BasicTableProps> = React.memo(({ materials,
                     {table.getRowModel().rows.map((row) => (
                         <Tr key={row.id}>
                             {row.getVisibleCells().map((cell) => (
-                                <Td key={cell.id} borderX="1px solid #e2e8f0">
+                                <Td
+                                    key={cell.id}
+                                    width={`${cell.column.columnDef.size}px`}
+                                    style={{ fontSize: '30px !important' }}  // style オブジェクトで指定
+                                    borderX="1px solid #e2e8f0"
+                                >
                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                 </Td>
                             ))}
