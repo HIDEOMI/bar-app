@@ -1,7 +1,9 @@
-import { doc, getDoc } from "firebase/firestore";
+import { collection, getDoc, updateDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
 import { db } from '../firebase/firebaseConfig';
 import { User, CachedUser } from "../types/types";
+import { setTimestamp, fetchDataFromCacheOrServer } from "./fetchDataFromCacheOrServer";
 
+const collectionName = 'users';
 
 const CACHE_EXPIRATION_TIME = 10 * 60 * 1000;  // キャッシュの有効期限を10分（600000ミリ秒）に設定
 const MAX_CACHE_SIZE = 100;  // キャッシュの最大サイズを100エントリに制限
@@ -31,6 +33,52 @@ const enforceCacheSizeLimit = (cache: { [key: string]: CachedUser }): { [key: st
     }
     return cache;
 };
+
+
+/** Userを更新登録するサービス。updataDataの中にID属性を入れないように注意！ */
+export const updateUser = async (id: string, updateData: any) => {
+    console.log("=== firestoreに保存 ===");
+    const productRef = doc(db, collectionName, id);  // ドキュメントIDを指定
+    await updateDoc(productRef, updateData);
+    await setTimestamp(collectionName);
+};
+
+export const deleteUser = async (id: string) => {
+    const productRef = doc(db, collectionName, id);
+    await deleteDoc(productRef);
+    await setTimestamp(collectionName);
+};
+
+
+export const getAllUsers = async (): Promise<User[]> => {
+    console.log("=== " + collectionName + " 全件取得 ===");
+    const q = query(collection(db, collectionName),
+        orderBy('displayName', 'asc')
+    );
+
+    const allUsers = await fetchDataFromCacheOrServer(collectionName, q) as User[];
+    return allUsers;
+};
+
+/** 指定したRoleのUserリストを取得する関数 */
+export const getUsersByRole = async (role: string) => {
+    console.log("対象Role：" + role);
+    const allUsers = await getAllUsers();
+
+    if (role === 'All') {
+        return allUsers;  // "All" を選んだ場合はすべての商品を表示
+    }
+
+    console.log("==== フィルタ実行 ====");
+    if (role === "未承認") {
+        const filtered = allUsers.filter((user) => user.role === "");
+        return filtered;
+    }
+
+    const filtered = allUsers.filter((user) => user.role === role);
+    return filtered;
+};
+
 
 /** ユーザIDに基づいてユーザ情報を取得する関数 */
 export const getUserDataById = async (userId: string) => {
