@@ -253,22 +253,33 @@ const MainMenu: React.FC = () => {
                             <p>該当する商品がありません。</p>
                         ) : (
                             <div>
-                                <ul>
+                                {/* <ul> */}
+                                <div className="product-grid">
                                     {productsByPage.map((product) => (
-                                        <li key={product.id}>
-                                            <img src={product.imageUrl} alt="画像募集中！" width="100" />
+                                        // <li key={product.id}>
+                                        <div className="product-item" key={product.id}>
+                                            {/* <img src={product.imageUrl} alt="画像募集中！" width="100" /> */}
                                             <h4>{product.name}</h4>
+                                            {/* 材料の文字列サイズは小さい */}
+                                            <p
+                                                style={{
+                                                    fontSize: "small",
+                                                    color: "gray",
+                                                }}
+                                            >材料: {product.materials.map(material => `${material.name}`).join(", ")}</p>
                                             値段: ¥ {product.price.toLocaleString()} <br />
-                                            {product.description} <br />
+                                            {/* {product.description} <br /> */}
                                             在庫: {product.isAvailable ? "在庫あり" : "売り切れ"} <br />
                                             {product.isAvailable && (
                                                 <button onClick={() => handleAddToCart(product)}>
                                                     カートに追加
                                                 </button>
                                             )}
-                                        </li>
+                                        </div>
+                                        // </li>
                                     ))}
-                                </ul>
+                                </div>
+                                {/* </ul> */}
 
                                 <br />
                                 <label>表示件数: </label>
@@ -282,6 +293,23 @@ const MainMenu: React.FC = () => {
                                 <br />
                                 <button onClick={fetchPrevPage} disabled={page <= 1}>前へ</button>
                                 <button onClick={fetchNextPage}>次へ</button>
+
+
+                                <style>
+                                    {`
+                                        .product-grid {
+                                            display: grid;
+                                            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                                            gap: 20px;
+                                            margin-top: 20px;
+                                        }
+                                        .product-item {
+                                            border: 1px solid #ddd;
+                                            padding: 10px;
+                                            text-align: center;
+                                        }
+                                    `}
+                                </style>
 
                             </div>
                         )}
