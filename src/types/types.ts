@@ -2,7 +2,7 @@
 export type User = {
     id: string;
     email: string;
-    isFriend: boolean;
+    role: string;
     displayName: string;
     bill?: number;  // 支払金額
 };

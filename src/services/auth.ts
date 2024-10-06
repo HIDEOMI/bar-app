@@ -18,7 +18,7 @@ export const signInWithGoogle = async () => {
             await setDoc(userRef, {
                 email: user.email,
                 displayName: user.displayName,
-                isFriend: false // デフォルトは未認可
+                role: "", // デフォルトは空文字列
                 // bill: 0   支払い情報は入れない
             });
         }

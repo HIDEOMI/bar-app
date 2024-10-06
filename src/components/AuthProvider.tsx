@@ -9,7 +9,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [isAdmin, setIsAdmin] = useState(false);
-    const [isFriend, setIsFriend] = useState(false);
+    const [isUser, setIsUser] = useState(false);
+    const [isEngineer, setIsEngineer] = useState(false);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChange(async (user) => {
@@ -17,11 +18,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const userData = await getUserDataById(user.uid);
                 setUser({ ...user, ...userData });
                 setIsAdmin(await iAmOwer(user.uid));
-                setIsFriend(userData?.isFriend || false);
+                setIsUser(userData?.role === "user" || false);
+                setIsEngineer(userData?.role === "engineer" || false);
             } else {
                 setUser(null);
                 setIsAdmin(false);
-                setIsFriend(false);
+                setIsUser(false);
+                setIsEngineer(false);
             }
             setLoading(false);
         });
@@ -30,7 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return (
         <AuthContext.Provider
-            value={{ user, loading, isAdmin, isFriend }}>
+            value={{ user, loading, isAdmin, isUser, isEngineer }}>
             {/* 下階層のコンポーネントを内包する */}
             {!loading && children}
         </AuthContext.Provider>

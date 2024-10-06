@@ -54,7 +54,7 @@ export const getProductsByCategory = async (category: string) => {
     if (category === 'All') {
         return allProducts;  // "All" を選んだ場合はすべての商品を表示
     } else {
-        console.log("==== ソート実行 ====");
+        console.log("==== フィルタ実行 ====");
         const filtered = allProducts.filter((product) => product.bases.includes(category));
         return filtered;
     }
