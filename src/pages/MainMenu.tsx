@@ -88,7 +88,7 @@ const MainMenu: React.FC = () => {
             : productsByCategory.filter(product => product.isAvailable);
 
         // 準備完了の商品のみ表示
-        const alreadyProducts = filteredProducts.filter(product => (product.already === "Ready"));
+        const alreadyProducts = filteredProducts.filter(product => (product.already === "Ready" || product.already === "Done"));
 
         // 状態を変えたら1ページに戻る
         const productsByPage = await getProductsByPage(alreadyProducts, 1, countInPage);
@@ -261,6 +261,11 @@ const MainMenu: React.FC = () => {
                                         <div className="product-item" key={product.id}>
                                             {/* <img src={product.imageUrl} alt="画像募集中！" width="100" /> */}
                                             <h4>{product.name}</h4>
+                                            <p
+                                            style={{fontSize: "small"}}
+                                            >
+                                                {product.summary}
+                                            </p>
                                             {/* 材料の文字列サイズは小さい */}
                                             <p
                                                 style={{
@@ -270,7 +275,7 @@ const MainMenu: React.FC = () => {
                                             >材料: {product.materials.map(material => `${material.name}`).join(", ")}</p>
                                             値段: ¥ {product.price.toLocaleString()} <br />
                                             {/* {product.description} <br /> */}
-                                            在庫: {product.isAvailable ? "在庫あり" : "売り切れ"} <br />
+                                            {product.isAvailable ? "在庫あり" : "売り切れ"} <br />
                                             {product.isAvailable && (
                                                 <button onClick={() => handleAddToCart(product)}>
                                                     カートに追加
