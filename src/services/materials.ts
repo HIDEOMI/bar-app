@@ -43,9 +43,10 @@ export const getMaterialsByCategory = async (category: string): Promise<Material
 
     if (category === 'All') {
         return allMaterials;  // "All" を選んだ場合はすべての商品を表示
-    } else {
-        console.log("==== フィルター実行 ====");
-        const filtered = allMaterials.filter((product) => product.category.includes(category));
-        return filtered;
     }
+
+    console.log("==== フィルター実行 ====");
+    const filtered = allMaterials.filter((product) => product.category.includes(category));
+    return filtered;
+
 };
