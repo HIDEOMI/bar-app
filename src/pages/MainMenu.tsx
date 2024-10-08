@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Product, CartItem } from "../types/types";
 import { useAuth } from "../hooks/useAuth";
-import { getProductsByPage, getProductsByCategory } from '../services/products';
+import { getProductsByPage, getFilteredProducts } from '../services/products';
 import { createOrder } from "../services/orders";
 
 const CART_STORAGE_KEY = "cartData";
@@ -80,7 +80,7 @@ const MainMenu: React.FC = () => {
     /** 商品リストのフィルタリングと初期ページ設定を行う関数 */
     const filterAndSetProducts = async () => {
         // カテゴリ商品を取得
-        const productsByCategory = await getProductsByCategory(selectedCategory);
+        const productsByCategory = await getFilteredProducts(selectedCategory, "All");
 
         // 在庫アリ or ナシでフィルタリング
         const filteredProducts = isAvailable
@@ -262,7 +262,7 @@ const MainMenu: React.FC = () => {
                                             {/* <img src={product.imageUrl} alt="画像募集中！" width="100" /> */}
                                             <h4>{product.name}</h4>
                                             <p
-                                            style={{fontSize: "small"}}
+                                                style={{ fontSize: "small" }}
                                             >
                                                 {product.summary}
                                             </p>
@@ -275,11 +275,12 @@ const MainMenu: React.FC = () => {
                                             >材料: {product.materials.map(material => `${material.name}`).join(", ")}</p>
                                             値段: ¥ {product.price.toLocaleString()} <br />
                                             {/* {product.description} <br /> */}
-                                            {product.isAvailable ? "在庫あり" : "売り切れ"} <br />
+                                            {/* もしも在庫がある場合はカートに追加ボタンを表示。ない場合はボタンを在庫切れ表記に変更 */}
                                             {product.isAvailable && (
-                                                <button onClick={() => handleAddToCart(product)}>
-                                                    カートに追加
-                                                </button>
+                                                <button onClick={() => handleAddToCart(product)}>カートに追加</button>
+                                            )}
+                                            {!product.isAvailable && (
+                                                <button disabled>在庫切れ</button>
                                             )}
                                         </div>
                                         // </li>

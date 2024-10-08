@@ -46,16 +46,33 @@ export const getProductsByPage = async (products: Product[], page: number, count
     return productsByPage;
 };
 
-/** 指定したカテゴリの商品リストを取得する関数 */
-export const getProductsByCategory = async (category: string) => {
+/** 指定したカテゴリ, ステータスの商品リストを取得する関数 */
+export const getFilteredProducts = async (category: string, status: string) => {
     console.log("対象カテゴリ：" + category);
+    console.log("対象ステータス：" + status);
     const allProducts = await getAllProducts();
 
+    // カテゴリもステータスも'All'の場合はすべての商品を表示
+    if (category === 'All' && status === 'All') {
+        return allProducts;
+    }
+
+    console.log("==== フィルタ実行 ====");
+    // カテゴリが'All'かつ、ステータスが指定された場合
     if (category === 'All') {
-        return allProducts;  // "All" を選んだ場合はすべての商品を表示
-    } else {
-        console.log("==== フィルタ実行 ====");
+        const filtered = allProducts.filter((product) => product.already === status);
+        return filtered;
+    }
+
+    // ステータスが'All'かつ、カテゴリが指定された場合
+    if (status === 'All') {
         const filtered = allProducts.filter((product) => product.bases.includes(category));
         return filtered;
     }
+
+    // カテゴリとステータスの両方が指定された場合
+    const filtered = allProducts.filter((product) =>
+        (product.already === status) && product.bases.includes(category)
+    );
+    return filtered;
 };
