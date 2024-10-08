@@ -239,7 +239,6 @@ const MainMenu: React.FC = () => {
                 <br />
                 <label>表示件数: </label>
                 <select value={countInPage} onChange={(e) => setCountInPage(Number(e.target.value))}>
-                    <option value={10}>10</option>
                     <option value={20}>20</option>
                     <option value={50}>50</option>
                     <option value={100}>100</option>
@@ -250,14 +249,13 @@ const MainMenu: React.FC = () => {
                 ) : (
                     <div>
                         {productsByPage.length === 0 ? (
-                            // {filteredProducts.length === 0 ? (
                             <p>該当する商品がありません。</p>
                         ) : (
                             <div>
-                                {/* <ul> */}
+                                <button onClick={fetchPrevPage} disabled={page <= 1}>前へ</button>
+                                <button onClick={fetchNextPage} disabled={productsByPage.length < countInPage}>次へ</button>
                                 <div className="product-grid">
                                     {productsByPage.map((product) => (
-                                        // <li key={product.id}>
                                         <div className="product-item" key={product.id}>
                                             {/* <img src={product.imageUrl} alt="画像募集中！" width="100" /> */}
                                             <h4>{product.name}</h4>
@@ -274,7 +272,6 @@ const MainMenu: React.FC = () => {
                                                 }}
                                             >材料: {product.materials.map(material => `${material.name}`).join(", ")}</p>
                                             値段: ¥ {product.price.toLocaleString()} <br />
-                                            {/* {product.description} <br /> */}
                                             {/* もしも在庫がある場合はカートに追加ボタンを表示。ない場合はボタンを在庫切れ表記に変更 */}
                                             {product.isAvailable && (
                                                 <button onClick={() => handleAddToCart(product)}>カートに追加</button>
@@ -283,15 +280,12 @@ const MainMenu: React.FC = () => {
                                                 <button disabled>在庫切れ</button>
                                             )}
                                         </div>
-                                        // </li>
                                     ))}
                                 </div>
-                                {/* </ul> */}
 
                                 <br />
                                 <label>表示件数: </label>
                                 <select value={countInPage} onChange={(e) => setCountInPage(Number(e.target.value))}>
-                                    <option value={10}>10</option>
                                     <option value={20}>20</option>
                                     <option value={50}>50</option>
                                     <option value={100}>100</option>
@@ -299,7 +293,7 @@ const MainMenu: React.FC = () => {
 
                                 <br />
                                 <button onClick={fetchPrevPage} disabled={page <= 1}>前へ</button>
-                                <button onClick={fetchNextPage}>次へ</button>
+                                <button onClick={fetchNextPage} disabled={productsByPage.length < countInPage}>次へ</button>
 
 
                                 <style>
