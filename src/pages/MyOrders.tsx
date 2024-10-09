@@ -37,7 +37,7 @@ const MyOrders: React.FC = () => {
             }
         };
         fetchOrders();
-    }, []);
+    }, [user]);
 
     return (
         <div>

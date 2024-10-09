@@ -74,7 +74,9 @@ const MainMenu: React.FC = () => {
             }
         };
         fetchDatas();
-    }, [isAvailable, selectedCategory, countInPage]);
+        
+        /* eslint-disable-next-line react-hooks/exhaustive-deps */
+    }, []);
 
 
     /** 商品リストのフィルタリングと初期ページ設定を行う関数 */
@@ -112,6 +114,8 @@ const MainMenu: React.FC = () => {
         const productsByPage = await getProductsByPage(products, nextPage, countInPage);
         setPage(nextPage);
         setProductsByPage(productsByPage);
+
+        filterAndSetProducts();
     };
 
     /** 前のページを取得 */
@@ -120,6 +124,8 @@ const MainMenu: React.FC = () => {
         const productsByPage = await getProductsByPage(products, prevPage, countInPage);
         setPage(prevPage);
         setProductsByPage(productsByPage);
+
+        filterAndSetProducts();
     };
 
     /** カテゴリフィルタの変更ハンドラ */
@@ -128,6 +134,8 @@ const MainMenu: React.FC = () => {
         const category = e.target.value;
         setSelectedCategory(category);
         console.log("選択したカテゴリ：" + category);
+
+        filterAndSetProducts();
     };
 
     /** 在庫フィルタチェックボックスの変更ハンドラ */
@@ -136,6 +144,8 @@ const MainMenu: React.FC = () => {
         const isChecked = e.target.checked;
         setIsAvailable(isChecked);
         console.log("在庫ナシも表示する：" + isChecked);
+
+        filterAndSetProducts();
     }
 
     /** 商品をカートに追加するハンドラ */

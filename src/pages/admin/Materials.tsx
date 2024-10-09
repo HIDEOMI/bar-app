@@ -40,7 +40,7 @@ const Materials: React.FC = () => {
             }
         };
         fetchDatas();
-    }, []);
+    }, [selectedCategory]);
 
     /** フォームのリセット処理 */
     const resetForm = () => {
@@ -125,7 +125,6 @@ const Materials: React.FC = () => {
     const handleCategoryChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
         const category = e.target.value;
         setSelectedCategory(category);
-        setMaterials(await getMaterialsByCategory(category));
     };
 
     /** 材料の変更内容をDBに保存するハンドラ

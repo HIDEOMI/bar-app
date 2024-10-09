@@ -3,7 +3,6 @@ import Select from 'react-select';
 import { Product, Material, MaterialInProduct } from '../../types/types';
 import { getAllProducts, getFilteredProducts, addProduct, updateProduct, deleteProduct } from '../../services/products';
 import { getAllMaterials } from '../../services/materials';
-import { ProductTable } from '../../components/ProductTable';
 
 
 const Products: React.FC = () => {
@@ -72,7 +71,7 @@ const Products: React.FC = () => {
             }
         };
         fetchDatas();
-    }, []);
+    }, [selectedCategory, selectedStatus]);
 
 
     /** メッセージを一定時間表示した後に非表示にする処理 */
@@ -287,16 +286,12 @@ const Products: React.FC = () => {
     const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
         const currentStatus = e.target.value;
         setSelectedStatus(currentStatus);
-        const filteredProducts = await getFilteredProducts(selectedCategory, currentStatus);
-        setFilteredProducts(filteredProducts);
     };
 
     /** カテゴリフィルタの変更ハンドラ */
     const handleCategoryChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
         const currentCategory = e.target.value;
         setSelectedCategory(currentCategory);
-        const filteredProducts = await getFilteredProducts(currentCategory, selectedStatus);
-        setFilteredProducts(filteredProducts);
     };
 
     /** 商品を編集するハンドラ */
