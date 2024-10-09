@@ -17,7 +17,7 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     outputs:
-      result: ${{ steps.deploy.outputs.result }}  # 出力を追加
+      status: ${{ steps.set_result.outputs.status }}  # 出力を修正
     steps:
       - uses: actions/checkout@v4
       - name: Install and Build
@@ -34,11 +34,12 @@ jobs:
         continue-on-error: true  # エラー時も次に進む
 
       - name: Set deploy result
+        id: set_result  # IDを追加
         run: |
-          if [[ $? -eq 0 ]]; then
-            echo "status=success" >> $GITHUB_ENV
+          if [[ "${{ steps.deploy.outcome }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_ENV  # 環境変数に設定
           else
-            echo "status=failure" >> $GITHUB_ENV
+            echo "status=failure" >> $GITHUB_ENV  # 環境変数に設定
           fi
 
   notify:
@@ -51,8 +52,6 @@ jobs:
           REPO_URL="https://github.com/${{ github.repository }}"
           RUN_ID="${{ github.run_id }}"
           LOG_URL="${REPO_URL}/actions/runs/${RUN_ID}"
-
-          echo "status=${{ needs.build_and_deploy.outputs.result }}"
 
           # 実行結果に応じたメッセージを設定
           if [[ "${{ env.status }}" == "success" ]]; then
