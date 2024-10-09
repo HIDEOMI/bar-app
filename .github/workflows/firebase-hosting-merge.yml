@@ -23,3 +23,21 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BAR_APP_1BC1B }}
           channelId: live
           projectId: bar-app-1bc1b
+        continue-on-error: true # エラー時も次に進む
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: build_and_deploy
+    steps:
+      - name: Notify Discord
+        uses: appleboy/discord-action@master
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          color: ${{ job.status == 'success' && 'success' || 'danger' }}
+          title: 'Deploy to Firebase Hosting on merge'
+          description: '${{ needs.build_and_deploy.result == "success" && "Deploy to Firebase Hosting was successful." || "Deploy failed." }}'
+          author_name: 'GitHub Actions'
+          author_url: 'https://github.com/'
+
+
+https://discord.com/api/webhooks/1293465461543014480/C_4M8ClQ2f1rKoykBeIOiR8O7D5PB2VTKec6xnGDKMNOG0Kl5qY0w9wTQ33VWQrQh7F0
