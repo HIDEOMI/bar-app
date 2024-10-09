@@ -29,5 +29,6 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     needs: build_and_deploy
-    - name: Discord Message Notify
-      run: curl -X POST -F content="${{ github.actor }}がコミットしてくれた！！進捗ありがとう😁" ${{ secrets.WEBHOOK_URL }}
+    steps:
+      - name: Discord Message Notify
+        run: curl -X POST -F content="${{ github.actor }}がコミットしてくれた！！進捗ありがとう😁" ${{ secrets.WEBHOOK_URL }}
