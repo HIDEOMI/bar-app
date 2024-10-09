@@ -14,7 +14,7 @@ const Products: React.FC = () => {
     const [allMaterials, setAllMaterials] = useState<Material[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
     const [selectedStatus, setSelectedStatus] = useState<string>('All');  // 選択されたステータス
-    const [selectedCategory, setSelectedCategory] = useState<string>('All');  // 選択されたカテゴリ
+    const [selectedBases, setSelectedBases] = useState<string[]>([]);  // 選択されたベース材料
     const [selectedMaterials, setSelectedMaterials] = useState<MaterialInProduct[]>([]);
     const [formProduct, setFormProduct] = useState<Product>({
         id: "",
@@ -43,14 +43,16 @@ const Products: React.FC = () => {
 
     const categoriesList = ['カクテル', 'ビール', 'ワイン'];  // カテゴリの選択肢
     const statusesList = ['All', 'Ready', 'Done', '見つからない', ''];  // ステータスの選択肢
-    const baseList = ['ウイスキー', 'ジン', 'ウォッカ', 'ラム'];  // ベースの選択肢
-    const baseCategories = ['All', 'ウイスキー', 'ジン', 'ウォッカ', 'ラム'];  // カテゴリの選択肢  
+    const baseMaterials = ['ウイスキー', 'ドライ・ジン', 'ウォッカ', 'ホワイト・ラム'];  // ベースリスト
+    const baseList = ['All', ...baseMaterials];  // ベースの選択肢
 
-    /** react-select 用の材料オプション */
+    /** react-select 用の材料オプション
+     * labelで昇順に並べ替え
+     */
     const materialOptions = allMaterials.map(material => ({
         value: material.id,
         label: material.name,
-    }));
+    })).sort((a, b) => a.label.localeCompare(b.label));
 
     const formRef = useRef<HTMLDivElement>(null);  // フォームへの参照を作成
     const productRefs = useRef<{ [key: string]: HTMLLIElement | null }>({});  // 商品ごとの参照を格納
@@ -62,7 +64,7 @@ const Products: React.FC = () => {
             try {
                 const allMaterialsData = await getAllMaterials();
                 setAllMaterials(allMaterialsData);
-                const filteredProducts = await getFilteredProducts(selectedCategory, selectedStatus);
+                const filteredProducts = await getFilteredProducts(selectedStatus, selectedBases);
                 setFilteredProducts(filteredProducts);
             } catch (error) {
                 console.error("Error fetching datas: ", error);
@@ -71,7 +73,7 @@ const Products: React.FC = () => {
             }
         };
         fetchDatas();
-    }, [selectedCategory, selectedStatus]);
+    }, [selectedStatus, selectedBases]);
 
 
     /** メッセージを一定時間表示した後に非表示にする処理 */
@@ -215,7 +217,7 @@ const Products: React.FC = () => {
         }
 
         resetForm();
-        const filteredProducts = await getFilteredProducts(selectedCategory, selectedStatus);
+        const filteredProducts = await getFilteredProducts(selectedStatus, selectedBases);
         setAllProducts(filteredProducts);
     };
 
@@ -288,10 +290,12 @@ const Products: React.FC = () => {
         setSelectedStatus(currentStatus);
     };
 
-    /** カテゴリフィルタの変更ハンドラ */
-    const handleCategoryChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const currentCategory = e.target.value;
-        setSelectedCategory(currentCategory);
+    /** ベース材料フィルタの変更ハンドラ */
+    const handleSelectBases = (selectedOptions: any) => {
+        const selected = selectedOptions.map((option: any) => {
+            return option.label;
+        });
+        setSelectedBases(selected);
     };
 
     /** 商品を編集するハンドラ */
@@ -482,14 +486,14 @@ const Products: React.FC = () => {
                 </select>
 
                 <br />
-                <label>カテゴリ選択: </label>
-                <select value={selectedCategory} onChange={handleCategoryChange}>
-                    {baseCategories.map((category) => (
-                        <option key={category} value={category}>
-                            {category}
-                        </option>
-                    ))}
-                </select>
+                {/* 材料のサジェスト可能なプルダウン */}
+                <label>材料ベース選択: </label>
+                <Select
+                    isMulti  // 複数選択可能
+                    options={materialOptions}  // 材料の選択肢を表示
+                    value={selectedBases.map(selectedBase => ({ value: selectedBase, label: selectedBase }))}  // 選択された材料を反映
+                    onChange={handleSelectBases}  // 選択変更時の処理
+                />
 
                 {loading ? (
                     <p>読み込み中...</p>
@@ -511,10 +515,14 @@ const Products: React.FC = () => {
                                                 カテゴリ: {product.categories.join(', ')} <br />
                                                 ベース: {product.bases.join(', ')} <br />
                                                 アルコール度数: {product.alc}% <br />
+                                                オススメ: {product.recommendation} <br />
+                                                カクテル言葉: {product.word} <br />
+                                                誕生日: {product.date} <br />
                                                 色: {product.color} <br />
-                                                材料: {product.materials.map(m => m.name).join(', ')} <br />
                                                 在庫: {product.isAvailable ? 'あり' : 'なし'} <br />
+                                                技法： {product.method} <br />
                                                 レシピ: {product.recipe} <br />
+                                                材料: {product.materials.map(m => m.name).join(', ')} <br />
                                                 準備完了： {product.already} <br />
                                                 <button onClick={() => handleEditProduct(product)}>編集</button>
                                                 <button onClick={() => handleDeleteRow(product.id)}>削除</button>

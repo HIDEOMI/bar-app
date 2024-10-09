@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
+import Select from 'react-select';
 import { Link } from "react-router-dom";
-import { Product, CartItem } from "../types/types";
+import { Product, Material, CartItem } from "../types/types";
 import { useAuth } from "../hooks/useAuth";
 import { getProductsByPage, getFilteredProducts } from '../services/products';
+import { getAllMaterials } from "../services/materials";
 import { createOrder } from "../services/orders";
 
 const CART_STORAGE_KEY = "cartData";
@@ -16,16 +18,24 @@ const MainMenu: React.FC = () => {
     const [error, setError] = useState<string | null>(null);  // エラーメッセージの状態
     const [products, setProducts] = useState<Product[]>([]);
     const [productsByPage, setProductsByPage] = useState<Product[]>([]);
+    const [allMaterials, setAllMaterials] = useState<Material[]>([]);
+    const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
     const [page, setPage] = useState<number>(1);
     const [countInPage, setCountInPage] = useState<number>(20);
-    const [selectedCategory, setSelectedCategory] = useState<string>('All');  // 選択されたカテゴリ
     const [cart, setCart] = useState<CartItem[]>([]);
     const [totalPrice, setTotalPrice] = useState(0);
     const [note, setNote] = useState("");  // 備考欄
     const [isSubmitting, setIsSubmitting] = useState(false);  // 注文送信中の状態
     const [isAvailable, setIsAvailable] = useState<boolean>(false);
 
-    const baseCategories = ['All', 'ウイスキー', 'ジン', 'ウォッカ', 'ラム'];  // カテゴリの選択肢
+    /** react-select 用の材料オプション
+     *  在庫がある材料のみ表示する
+     */
+    const materialOptions = allMaterials.filter(material => material.totalAmount > 0)
+        .map(material => ({
+            value: material.name,
+            label: material.name,
+        }));
 
 
     // ページロード時にカート情報を復元
@@ -66,6 +76,8 @@ const MainMenu: React.FC = () => {
         const fetchDatas = async () => {
             setLoading(true);
             try {
+                const allMaterialsData = await getAllMaterials();
+                setAllMaterials(allMaterialsData);
                 filterAndSetProducts();
             } catch (error) {
                 console.error("Error fetching datas: ", error);
@@ -75,15 +87,14 @@ const MainMenu: React.FC = () => {
             }
         };
         fetchDatas();
-
         /* eslint-disable-next-line react-hooks/exhaustive-deps */
-    }, []);
+    }, [selectedMaterials, isAvailable, countInPage]);
 
 
     /** 商品リストのフィルタリングと初期ページ設定を行う関数 */
     const filterAndSetProducts = async () => {
-        // カテゴリ商品を取得
-        const productsByCategory = await getFilteredProducts(selectedCategory, "All");
+        // 選択された材料が含まれる商品を取得
+        const productsByCategory = await getFilteredProducts("All", selectedMaterials);
 
         // 在庫アリ or ナシでフィルタリング
         const filteredProducts = isAvailable
@@ -115,8 +126,6 @@ const MainMenu: React.FC = () => {
         const productsByPage = await getProductsByPage(products, nextPage, countInPage);
         setPage(nextPage);
         setProductsByPage(productsByPage);
-
-        filterAndSetProducts();
     };
 
     /** 前のページを取得 */
@@ -125,18 +134,14 @@ const MainMenu: React.FC = () => {
         const productsByPage = await getProductsByPage(products, prevPage, countInPage);
         setPage(prevPage);
         setProductsByPage(productsByPage);
-
-        filterAndSetProducts();
     };
 
-    /** カテゴリフィルタの変更ハンドラ */
-    const handleCategoryChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-        // 選択状態を取得
-        const category = e.target.value;
-        setSelectedCategory(category);
-        console.log("選択したカテゴリ：" + category);
-
-        filterAndSetProducts();
+    /** 検索対象の材料リストを追加するハンドラ */
+    const handleSelectMaterial = (selectedOptions: any) => {
+        const selected = selectedOptions.map((option: any) => {
+            return option.label;
+        });
+        setSelectedMaterials(selected);
     };
 
     /** 在庫フィルタチェックボックスの変更ハンドラ */
@@ -145,8 +150,6 @@ const MainMenu: React.FC = () => {
         const isChecked = e.target.checked;
         setIsAvailable(isChecked);
         console.log("在庫ナシも表示する：" + isChecked);
-
-        filterAndSetProducts();
     }
 
     /** 商品をカートに追加するハンドラ */
@@ -235,13 +238,24 @@ const MainMenu: React.FC = () => {
             <h3>商品リスト</h3>
             <div>
                 <label>カテゴリ選択: </label>
-                <select value={selectedCategory} onChange={handleCategoryChange}>
+                <br />
+                <br />
+                {/* 材料のサジェスト可能なプルダウン */}
+                <label>ベース材料を選択</label>
+                <Select
+                    isMulti  // 複数選択可能
+                    options={materialOptions}  // 材料の選択肢を表示
+                    value={selectedMaterials.map(selectedMaterial => ({ value: selectedMaterial, label: selectedMaterial }))}  // 選択された材料を反映
+                    onChange={handleSelectMaterial}  // 選択変更時の処理
+                />
+
+                {/* <select value={selectedCategory} onChange={handleCategoryChange}>
                     {baseCategories.map((category) => (
                         <option key={category} value={category}>
                             {category}
                         </option>
                     ))}
-                </select>
+                </select> */}
 
                 <br />
                 <label>※在庫切れ商品も表示する場合はチェックを入れる </label>

@@ -1,6 +1,6 @@
 import { collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
 import { db } from '../firebase/firebaseConfig';
-import { Product } from "../types/types";
+import { Material, Product } from "../types/types";
 import { setTimestamp, fetchDataFromCacheOrServer } from "./fetchDataFromCacheOrServer";
 
 const collectionName = 'products';
@@ -47,32 +47,38 @@ export const getProductsByPage = async (products: Product[], page: number, count
 };
 
 /** 指定したカテゴリ, ステータスの商品リストを取得する関数 */
-export const getFilteredProducts = async (category: string, status: string) => {
-    console.log("対象カテゴリ：" + category);
+export const getFilteredProducts = async (status: string, materialNames?: string[]) => {
     console.log("対象ステータス：" + status);
+    console.log("選択した材料：" + materialNames);
     const allProducts = await getAllProducts();
+    const isAllMaterial = materialNames?.length === 0;
 
-    // カテゴリもステータスも'All'の場合はすべての商品を表示
-    if (category === 'All' && status === 'All') {
+    // ステータスが'All'かつ、材料選択が無しの場合はすべての商品を表示
+    if (status === 'All' && isAllMaterial) {
         return allProducts;
     }
 
     console.log("==== フィルタ実行 ====");
-    // カテゴリが'All'かつ、ステータスが指定された場合
-    if (category === 'All') {
+    // 材料選択が無し、ステータスが指定された場合
+    if (isAllMaterial) {
         const filtered = allProducts.filter((product) => product.already === status);
         return filtered;
     }
 
-    // ステータスが'All'かつ、カテゴリが指定された場合
+    // ステータスが'All'、材料が指定された場合
+    // 材料が全て含まれている商品を抽出
+    // なお、材料のは量は15以上
     if (status === 'All') {
-        const filtered = allProducts.filter((product) => product.bases.includes(category));
+        const filtered = allProducts.filter((product) =>
+            materialNames?.every(materialName => product.materials.some(m => m.name === materialName && m.quantity >= 15))
+        );
         return filtered;
     }
 
-    // カテゴリとステータスの両方が指定された場合
+    // ステータスと材料の両方が指定された場合
     const filtered = allProducts.filter((product) =>
-        (product.already === status) && product.bases.includes(category)
+        (product.already === status) && materialNames?.every(materialName => product.materials.some(m => m.name === materialName && m.quantity >= 15))
     );
     return filtered;
 };
+
