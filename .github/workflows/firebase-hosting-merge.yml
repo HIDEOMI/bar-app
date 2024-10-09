@@ -16,16 +16,30 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.deploy.outputs.result }}  # 出力を追加
     steps:
       - uses: actions/checkout@v4
-      - run: npm ci && npm run build
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: Install and Build
+        run: npm ci && npm run build
+
+      - name: Deploy to Firebase
+        id: deploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BAR_APP_1BC1B }}
           channelId: live
           projectId: bar-app-1bc1b
-        continue-on-error: true # エラー時も次に進む
+        continue-on-error: true  # エラー時も次に進む
+
+      - name: Set deploy result
+        run: |
+          if [[ $? -eq 0 ]]; then
+            echo "result=success" >> $GITHUB_ENV
+          else
+            echo "result=failure" >> $GITHUB_ENV
+          fi
 
   notify:
     runs-on: ubuntu-latest
@@ -39,7 +53,7 @@ jobs:
           LOG_URL="${REPO_URL}/actions/runs/${RUN_ID}"
 
           # 実行結果に応じたメッセージを設定
-          if [[ "${{ needs.build_and_deploy.outputs.result }}" == "success" ]]; then
+          if [[ "${{ env.result }}" == "success" ]]; then
             message='{"content": "ビルドとデプロイが成功しました！ 🎉 実行ログはこちら: '"$LOG_URL"'"}'
           else
             message='{"content": "ビルドとデプロイに失敗しました。エラーメッセージを確認してください。 ❌ 実行ログはこちら: '"$LOG_URL"'"}'
