@@ -17,11 +17,15 @@ declare module '@tanstack/table-core' {
 
 interface BasicTableProps {
     users: User[];
+    roles: string[];
     handlePendingUpdate: (updateInfo: { [key: string]: any; id: string; }) => Promise<void>;
     handleDeleteRow: (id: string) => Promise<void>;
 }
 
-/** カラム定義 */
+/** カラム定義
+ * rolesをプルダウン表示する
+ * rolesについては、propsで受け取ったものを利用する
+ */
 const columns: ColumnDef<User, any>[] = [
     {
         id: 'delete',
@@ -74,7 +78,7 @@ const defaultColumn: Partial<ColumnDef<User>> = {
 
 
 /** UserTable コンポーネント */
-export const UserTable: React.FC<BasicTableProps> = React.memo(({ users, handlePendingUpdate, handleDeleteRow }) => {
+export const UserTable: React.FC<BasicTableProps> = React.memo(({ users, roles, handlePendingUpdate, handleDeleteRow }) => {
     // const [updateData, setUdpateData] = useState<{ [key: string]: any; id: string }[]>([]);
 
     const table = useReactTable<User>({
@@ -91,6 +95,7 @@ export const UserTable: React.FC<BasicTableProps> = React.memo(({ users, handleP
                 handlePendingUpdate(updateInfo);
             },
             handleDeleteRow,
+            roles,
         },
     });
 

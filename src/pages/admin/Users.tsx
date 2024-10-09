@@ -119,6 +119,7 @@ const Users: React.FC = () => {
                             <>
                                 <UserTable
                                     users={filteredUsers}
+                                    roles={roles}
                                     handlePendingUpdate={handlePendingUpdate}
                                     handleDeleteRow={handleDeleteRow}
                                 />
