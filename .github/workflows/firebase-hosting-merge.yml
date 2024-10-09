@@ -35,8 +35,8 @@ jobs:
         uses: appleboy/discord-action@master
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          color: ${{ job.status == 'success' && 'success' || 'danger' }}
+          color: ${{ needs.build_and_deploy.result == 'success' && 'good' || 'danger' }}
           title: 'Deploy to Firebase Hosting on merge'
-          description: '${{ needs.build_and_deploy.result == "success" && "Deploy to Firebase Hosting was successful." || "Deploy failed." }}'
+          description: ${{ needs.build_and_deploy.result == 'success' ? 'Deploy to Firebase Hosting was successful.' : 'Deploy failed.' }}
           author_name: 'GitHub Actions'
           author_url: 'https://github.com/'
