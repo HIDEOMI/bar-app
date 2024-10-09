@@ -8,6 +8,7 @@ import { User } from '../types/types';
 
 /** TableMeta を拡張して updateData を定義 */
 declare module '@tanstack/table-core' {
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     interface TableMeta<TData extends RowData> {
         updateData: (rowIndex: number, columnId: string, value: unknown) => void;
         handleDeleteRow: (id: string) => void;
