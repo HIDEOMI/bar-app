@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { User } from '../../types/types';
-import { getAllUsers, getUsersByRole, updateUser, deleteUser } from '../../services/users';
+import { getUsersByRole, updateUser, deleteUser } from '../../services/users';
 import { UserTable } from '../../components/UserTable';
 
 

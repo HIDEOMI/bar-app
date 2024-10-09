@@ -74,6 +74,8 @@ const MainMenu: React.FC = () => {
             }
         };
         fetchDatas();
+        
+        /* eslint-disable-next-line react-hooks/exhaustive-deps */
     }, []);
 
 
@@ -122,7 +124,7 @@ const MainMenu: React.FC = () => {
         const productsByPage = await getProductsByPage(products, prevPage, countInPage);
         setPage(prevPage);
         setProductsByPage(productsByPage);
-        
+
         filterAndSetProducts();
     };
 
