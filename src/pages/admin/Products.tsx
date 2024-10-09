@@ -3,7 +3,6 @@ import Select from 'react-select';
 import { Product, Material, MaterialInProduct } from '../../types/types';
 import { getAllProducts, getFilteredProducts, addProduct, updateProduct, deleteProduct } from '../../services/products';
 import { getAllMaterials } from '../../services/materials';
-import { ProductTable } from '../../components/ProductTable';
 
 
 const Products: React.FC = () => {
