@@ -17,7 +17,7 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     outputs:
-      status: ${{ steps.set_result.outputs.status }}  # 出力を修正
+      status: ${{ steps.set_result.outputs.status }}
     steps:
       - uses: actions/checkout@v4
       - name: Install and Build
@@ -37,9 +37,9 @@ jobs:
         id: set_result  # IDを追加
         run: |
           if [[ "${{ steps.deploy.outcome }}" == "success" ]]; then
-            echo "status=success" >> $GITHUB_ENV  # 環境変数に設定
+            echo "::set-output name=status::success"  # 出力を設定
           else
-            echo "status=failure" >> $GITHUB_ENV  # 環境変数に設定
+            echo "::set-output name=status::failure"  # 出力を設定
           fi
 
   notify:
@@ -54,7 +54,7 @@ jobs:
           LOG_URL="${REPO_URL}/actions/runs/${RUN_ID}"
 
           # 実行結果に応じたメッセージを設定
-          if [[ "${{ env.status }}" == "success" ]]; then
+          if [[ "${{ needs.build_and_deploy.outputs.status }}" == "success" ]]; then
             message='{"content": "ビルドとデプロイが成功しました！ 🎉 実行ログはこちら: '"$LOG_URL"'"}'
           else
             message='{"content": "ビルドとデプロイに失敗しました。エラーメッセージを確認してください。 ❌ 実行ログはこちら: '"$LOG_URL"'"}'
