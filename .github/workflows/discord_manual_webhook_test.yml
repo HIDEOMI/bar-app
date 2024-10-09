@@ -33,11 +33,17 @@ jobs:
     steps:
       - name: Discord Message Notify
         run: |
+          # GitHubリポジトリのURLとActionsの実行IDを取得
+          REPO_URL="https://github.com/${{ github.repository }}"
+          RUN_ID="${{ github.run_id }}"
+          LOG_URL="${REPO_URL}/actions/runs/${RUN_ID}"
+
+          # 実行結果に応じたメッセージを設定
           if [[ "${{ needs.build_and_deploy.outputs.result }}" == "success" ]]; then
-            message='{"content": "ビルドとデプロイが成功しました！ 🎉"}'
+            message='{"content": "ビルドとデプロイが成功しました！ 🎉 実行ログはこちら: '"$LOG_URL"'"}'
           else
-            message='{"content": "ビルドとデプロイに失敗しました。エラーメッセージを確認してください。 ❌"}'
+            message='{"content": "ビルドとデプロイに失敗しました。エラーメッセージを確認してください。 ❌ 実行ログはこちら: '"$LOG_URL"'"}'
           fi
         
           # Discordにメッセージを送信
-          curl -X POST -H 'Content-type: application/json' --data "$message" ${{ secrets.DISCORD_WEBHOOK_URL }}
+          curl -X POST -H 'Content-Type: application/json' --data "$message" ${{ secrets.DISCORD_WEBHOOK_URL }}
