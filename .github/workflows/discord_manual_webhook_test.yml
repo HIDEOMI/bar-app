@@ -4,10 +4,10 @@ on:
   workflow_dispatch: # 手動トリガーを追加
   push:
     branches:
-      - main
+      - test
   pull_request:
     branches:
-      - main
+      - test
 
 jobs:
   build_and_deploy:
