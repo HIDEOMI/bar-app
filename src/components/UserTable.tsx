@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Table, TableContainer, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react';
-import { Input } from '@mui/material';
+import { Input, Select } from '@mui/material';
 import { RowData } from '@tanstack/table-core';
 import { User } from '../types/types';
 
@@ -41,6 +41,38 @@ const columns: ColumnDef<User, any>[] = [
     {
         accessorKey: 'role',
         header: 'Role',
+        cell: ({ row, column, table }) => {
+            const initialValue = row.getValue(column.id);
+            const [value, setValue] = useState(initialValue);
+            const [isEdited, setIsEdited] = useState(false); // 編集状態を管理
+
+            const onBlur = () => {
+                if (value !== initialValue) { // 値が変更された場合
+                    setIsEdited(true);
+                    table.options.meta?.updateData(row.index, column.id, value);
+                }
+            };
+
+            useEffect(() => {
+                setValue(initialValue);
+                setIsEdited(false); // 初期値に戻った場合は編集状態をリセット
+            }, [initialValue]);
+
+            return (
+                <Select
+                    value={value as string}
+                    onChange={(e) => setValue(e.target.value)}
+                    onBlur={onBlur}
+                    style={{ color: isEdited ? 'red' : 'inherit' }} // 編集された場合に赤くする
+                >
+                    {table.options.meta?.roles.map((role) => (
+                        <option key={role} value={role}>
+                            {role}
+                        </option>
+                    ))}
+                </Select>
+            );
+        },
     },
 ];
 
