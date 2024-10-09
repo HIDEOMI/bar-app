@@ -31,4 +31,4 @@ jobs:
     needs: build_and_deploy
     steps:
       - name: Discord Message Notify
-        run: curl -X POST -F content="${{ github.actor }}がコミットしてくれた！！進捗ありがとう😁" ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: curl -X POST -F content="hello world" ${{ secrets.DISCORD_WEBHOOK_URL }}
