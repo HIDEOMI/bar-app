@@ -35,11 +35,6 @@ jobs:
         uses: stegzilla/discord-notify@v2
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          embeds: |
-            [
-              {
-                "title": "テストメッセージ",
-                "description": "これはテストです。",
-                "color": 3066993
-              }
-            ]
+          title: "テストメッセージ"
+          message: "これはテストです。"
+          colour: 3066993  # 色を数値で指定
