@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Select from 'react-select';
 import { Product, Material, MaterialInProduct } from '../../types/types';
-import { getAllProducts, addProduct, updateProduct, deleteProduct } from '../../services/products';
+import { getAllProducts, getFilteredProducts, addProduct, updateProduct, deleteProduct } from '../../services/products';
 import { getAllMaterials } from '../../services/materials';
 import { ProductTable } from '../../components/ProductTable';
 
@@ -14,9 +14,8 @@ const Products: React.FC = () => {
     const [allProducts, setAllProducts] = useState<Product[]>([]);
     const [allMaterials, setAllMaterials] = useState<Material[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-    // const [selectedCategory, setSelectedCategory] = useState<string>('All');  // 選択されたカテゴリ
-    const [selectedCategory, setSelectedCategory] = useState<string>('ジン');  // 選択されたカテゴリ
-    const [isReady, setIsReady] = useState<boolean>(false);  // Readyを非表示にするかどうか
+    const [selectedStatus, setSelectedStatus] = useState<string>('All');  // 選択されたステータス
+    const [selectedCategory, setSelectedCategory] = useState<string>('All');  // 選択されたカテゴリ
     const [selectedMaterials, setSelectedMaterials] = useState<MaterialInProduct[]>([]);
     const [formProduct, setFormProduct] = useState<Product>({
         id: "",
@@ -42,9 +41,9 @@ const Products: React.FC = () => {
         word: "",
         date: "",
     });
-    const [pendingUpdates, setPendingUpdates] = useState<{ [key: string]: any; id: string }[]>([]);
 
     const categoriesList = ['カクテル', 'ビール', 'ワイン'];  // カテゴリの選択肢
+    const statusesList = ['All', 'Ready', 'Done', '見つからない', ''];  // ステータスの選択肢
     const baseList = ['ウイスキー', 'ジン', 'ウォッカ', 'ラム'];  // ベースの選択肢
     const baseCategories = ['All', 'ウイスキー', 'ジン', 'ウォッカ', 'ラム'];  // カテゴリの選択肢  
 
@@ -62,11 +61,10 @@ const Products: React.FC = () => {
         const fetchDatas = async () => {
             setLoading(true);
             try {
-                const allProductsData = await getAllProducts();
                 const allMaterialsData = await getAllMaterials();
-                setAllProducts(allProductsData);
                 setAllMaterials(allMaterialsData);
-                setFilteredProducts(allProductsData);  // 初期値としてすべての材料を表示
+                const filteredProducts = await getFilteredProducts(selectedCategory, selectedStatus);
+                setFilteredProducts(filteredProducts);
             } catch (error) {
                 console.error("Error fetching datas: ", error);
             } finally {
@@ -170,16 +168,16 @@ const Products: React.FC = () => {
         }
 
         // バリデーション: 色が空欄
-        if (formProduct.color.trim() === '') {
-            setError('色を入力してください。');
-            return;
-        }
+        // if (formProduct.color.trim() === '') {
+        //     setError('色を入力してください。');
+        //     return;
+        // }
 
         // バリデーション: ノンアルじゃないのにアルコールが0
-        if (formProduct.alc === 0) {
-            setError('アルコール度数を入力してください。');
-            return;
-        }
+        // if (formProduct.alc === 0) {
+        //     setError('アルコール度数を入力してください。');
+        //     return;
+        // }
 
         formProduct.isAvailable = true;
         // 商品の価格を計算する
@@ -218,15 +216,8 @@ const Products: React.FC = () => {
         }
 
         resetForm();
-        const allProductsData = await getAllProducts();
-        setAllProducts(allProductsData);
-
-        if (isReady) {
-            const filtered = allProducts.filter((product) => product.already !== 'Ready');
-            setFilteredProducts(filtered);
-        } else {
-            setFilteredProducts(allProductsData);
-        }
+        const filteredProducts = await getFilteredProducts(selectedCategory, selectedStatus);
+        setAllProducts(filteredProducts);
     };
 
     /** キャンセルボタンを押したときのハンドラ */
@@ -272,7 +263,7 @@ const Products: React.FC = () => {
                 return materialInProduct; // 更新後の `materialInProduct` を返す
             });
 
-            price = Math.ceil(price) + 40;  // 氷代 + 消耗品代
+            price = Math.ceil(price) + 50;  // 氷 + ソフトドリンク + 消耗品
 
             // 更新対象かどうか確認
             if ((product.isAvailable !== isAvailable) || (product.price !== price)) {
@@ -292,34 +283,20 @@ const Products: React.FC = () => {
         window.confirm('商品の在庫状況と値段を最新化しました。');
     };
 
+    /** ステータスフィルタの変更ハンドラ */
+    const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const currentStatus = e.target.value;
+        setSelectedStatus(currentStatus);
+        const filteredProducts = await getFilteredProducts(selectedCategory, currentStatus);
+        setFilteredProducts(filteredProducts);
+    };
+
     /** カテゴリフィルタの変更ハンドラ */
-    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const category = e.target.value;
-        setSelectedCategory(category);
-
-        if (category === 'All') {
-            setFilteredProducts(allProducts);  // "All" を選んだ場合はすべての商品を表示
-        } else {
-            const filtered = allProducts.filter((product) => product.bases.includes(category));
-            setFilteredProducts(filtered);  // 選択したカテゴリの材料だけを表示
-        }
-    };
-
-    /** Readyを非表示にするハンドラ */
-    const handleReadyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setIsReady(e.target.checked);
-        if (e.target.checked) {
-            const filtered = allProducts.filter((product) => product.already !== 'Ready');
-            setFilteredProducts(filtered);
-        } else {
-            setFilteredProducts(allProducts);
-        }
-    };
-
-    /** 材料の値を変更したときに変更内容を保持するハンドラ */
-    const handlePendingUpdate = async (updateInfo: { [key: string]: any; id: string; }) => {
-        setPendingUpdates([...pendingUpdates, updateInfo]);
-        console.log(pendingUpdates);
+    const handleCategoryChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const currentCategory = e.target.value;
+        setSelectedCategory(currentCategory);
+        const filteredProducts = await getFilteredProducts(currentCategory, selectedStatus);
+        setFilteredProducts(filteredProducts);
     };
 
     /** 商品を編集するハンドラ */
@@ -368,12 +345,24 @@ const Products: React.FC = () => {
                         onChange={handleInputChange}
                     />
                     <br />
+                    <label>概要: </label>
+                    <input
+                        type="text"
+                        name="summary"
+                        placeholder="概要"
+                        value={formProduct.summary}
+                        onChange={handleInputChange}
+                        style={{ width: '80%', fontSize: '1rem' }} // 幅とフォントサイズを調整
+                    />
+                    <br />
                     <label>説明: </label>
                     <textarea
                         name="description"
                         placeholder="説明"
                         value={formProduct.description}
                         onChange={handleInputChange}
+                        rows={3} // ここで行数を指定
+                        style={{ width: '80%', fontSize: '1rem' }} // 幅とフォントサイズを調整
                     />
                     <br />
                     <label>カテゴリ: </label>
@@ -422,16 +411,6 @@ const Products: React.FC = () => {
                         onChange={handleInputChange}
                     />
                     <br />
-                    <label>レシピ: </label>
-                    <textarea
-                        name="recipe"
-                        placeholder="レシピ"
-                        value={formProduct.recipe}
-                        onChange={handleInputChange}
-                        rows={7} // ここで行数を指定
-                        style={{ width: '80%', fontSize: '1rem' }} // 幅とフォントサイズを調整
-                    />
-                    <br />
                     <label>画像URL: </label>
                     <input
                         type="text"
@@ -439,6 +418,25 @@ const Products: React.FC = () => {
                         placeholder="画像URL"
                         value={formProduct.imageUrl}
                         onChange={handleInputChange}
+                    />
+                    <br />
+                    <label>メソッド: </label>
+                    <input
+                        type="text"
+                        name="method"
+                        placeholder="メソッド"
+                        value={formProduct.method}
+                        onChange={handleInputChange}
+                    />
+                    <br />
+                    <label>レシピ: </label>
+                    <textarea
+                        name="recipe"
+                        placeholder="レシピ"
+                        value={formProduct.recipe}
+                        onChange={handleInputChange}
+                        rows={5} // ここで行数を指定
+                        style={{ width: '80%', fontSize: '1rem' }} // 幅とフォントサイズを調整
                     />
 
                     {/* 材料の選択 */}
@@ -479,6 +477,16 @@ const Products: React.FC = () => {
                 <button onClick={handleUpdateProducts}>商品最新化</button>
                 <br />
 
+                <label>ステータス選択: </label>
+                <select value={selectedStatus} onChange={handleStatusChange}>
+                    {statusesList.map((status) => (
+                        <option key={status} value={status}>
+                            {status}
+                        </option>
+                    ))}
+                </select>
+
+                <br />
                 <label>カテゴリ選択: </label>
                 <select value={selectedCategory} onChange={handleCategoryChange}>
                     {baseCategories.map((category) => (
@@ -488,10 +496,6 @@ const Products: React.FC = () => {
                     ))}
                 </select>
 
-                <br />
-                <label>Readyを非表示にする場合はチェック </label>
-                <input type="checkbox" checked={isReady} onChange={handleReadyChange} />
-
                 {loading ? (
                     <p>読み込み中...</p>
                 ) : (
@@ -500,11 +504,6 @@ const Products: React.FC = () => {
                             <p>該当する商品がありません。</p>
                         ) : (
                             <>
-                                {/* <ProductTable
-                                    products={filteredProducts}
-                                    handlePendingUpdate={handlePendingUpdate}
-                                    handleDeleteRow={handleDeleteRow}
-                                /> */}
                                 <ul>
                                     {filteredProducts.map(product => (
                                         <li
