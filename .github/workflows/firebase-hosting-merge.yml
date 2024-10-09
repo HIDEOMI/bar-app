@@ -4,6 +4,7 @@
 name: Deploy to Firebase Hosting on merge
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -52,7 +53,7 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           LOG_URL="${REPO_URL}/actions/runs/${RUN_ID}"
 
-          echo "status=${{ needs.build_and_deploy.outputs.result }}"
+          echo "result: $result"
 
           # 実行結果に応じたメッセージを設定
           if [[ "${{ env.status }}" == "success" ]]; then
