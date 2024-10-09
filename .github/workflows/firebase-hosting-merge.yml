@@ -36,9 +36,9 @@ jobs:
       - name: Set deploy result
         run: |
           if [[ $? -eq 0 ]]; then
-            echo "result=success" >> $GITHUB_ENV
+            echo "status=success" >> $GITHUB_ENV
           else
-            echo "result=failure" >> $GITHUB_ENV
+            echo "status=failure" >> $GITHUB_ENV
           fi
 
   notify:
@@ -53,7 +53,7 @@ jobs:
           LOG_URL="${REPO_URL}/actions/runs/${RUN_ID}"
 
           # 実行結果に応じたメッセージを設定
-          if [[ "${{ env.result }}" == "success" ]]; then
+          if [[ "${{ env.status }}" == "success" ]]; then
             message='{"content": "ビルドとデプロイが成功しました！ 🎉 実行ログはこちら: '"$LOG_URL"'"}'
           else
             message='{"content": "ビルドとデプロイに失敗しました。エラーメッセージを確認してください。 ❌ 実行ログはこちら: '"$LOG_URL"'"}'
