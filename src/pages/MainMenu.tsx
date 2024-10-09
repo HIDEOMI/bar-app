@@ -69,12 +69,13 @@ const MainMenu: React.FC = () => {
                 filterAndSetProducts();
             } catch (error) {
                 console.error("Error fetching datas: ", error);
+                console.error("Error fetching datas: ", error);
             } finally {
                 setLoading(false);
             }
         };
         fetchDatas();
-        
+
         /* eslint-disable-next-line react-hooks/exhaustive-deps */
     }, []);
 
