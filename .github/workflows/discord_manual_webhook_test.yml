@@ -27,15 +27,17 @@ jobs:
           result=$(cat result.txt)
           echo "::set-output name=result::$result"
 
-  notify:
+ notify:
     runs-on: ubuntu-latest
     needs: build_and_deploy
     steps:
-      - name: Send embed message to Discord
-        uses: stegzilla/discord-notify@v2
-        with:
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          title: "テストメッセージ"
-          message: "これはテストです。"
-          colour: 3066993  # 色を数値で指定
-        if: ${{ always() }}
+      - name: Discord Message Notify
+        run: |
+          if [[ "${{ needs.build_and_deploy.outputs.result }}" == "success" ]]; then
+            message='{"text": "ビルドとデプロイが成功しました！ 🎉"}'
+          else
+            message='{"text": "ビルドとデプロイに失敗しました。エラーメッセージを確認してください。 ❌"}'
+          fi
+
+          # Discordにメッセージを送信
+          curl -X POST -H 'Content-type: application/json' --data "$message" ${{ secrets.DISCORD_WEBHOOK_URL }}
