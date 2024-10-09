@@ -1,0 +1,45 @@
+name: Notify Discord
+
+on:
+  workflow_dispatch: # 手動トリガーを追加
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.set_result.outputs.result }}
+    steps:
+      - name: Build and Deploy
+        id: build
+        run: |
+          echo "ビルドとデプロイが成功しました"
+          echo "success" > result.txt 
+
+      - name: Set result variable
+        id: set_result
+        run: |
+          result=$(cat result.txt)
+          echo "::set-output name=result::$result"
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: build_and_deploy
+    steps:
+      - name: Send embed message to Discord
+        uses: stegzilla/discord-notify@v2
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          embeds: |
+            [
+              {
+                "title": "テストメッセージ",
+                "description": "これはテストです。",
+                "color": 3066993
+              }
+            ]
