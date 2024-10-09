@@ -27,16 +27,32 @@ jobs:
           projectId: bar-app-1bc1b
         continue-on-error: true # エラー時も次に進む
 
-  # notify:
-  #   runs-on: ubuntu-latest
-  #   needs: build_and_deploy
-  #   steps:
-  #     - name: Notify Discord
-  #       uses: appleboy/discord-action@master
-  #       with:
-  #         webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-  #         color: ${{ needs.build_and_deploy.result == 'success' && 'good' || 'danger' }}
-  #         title: 'Deploy to Firebase Hosting on merge'
-  #         description: ${{ needs.build_and_deploy.result == 'success' && 'Deploy to Firebase Hosting was successful.' || 'Deploy failed.' }}
-  #         author_name: 'GitHub Actions'
-  #         author_url: 'https://github.com/'
+ notify:
+    runs-on: ubuntu-latest
+    needs: build_and_deploy
+    steps:
+      - name: Determine message
+        id: message
+        run: |
+          if [[ "${{ needs.build_and_deploy.outputs.result }}" == "success" ]]; then
+            echo "title=成功！" >> $GITHUB_ENV
+            echo "description=ビルドとデプロイが成功しました！ 🎉" >> $GITHUB_ENV
+            echo "color=3066993" >> $GITHUB_ENV # 緑色
+          else
+            echo "title=失敗！" >> $GITHUB_ENV
+            echo "description=ビルドとデプロイに失敗しました。エラーメッセージを確認してください。 ❌" >> $GITHUB_ENV
+            echo "color=15158332" >> $GITHUB_ENV # 赤色
+          fi
+
+      - name: Send embed message to Discord
+        uses: benc-uk/action-discord@v1.0.0
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          embeds: |
+            [
+              {
+                "title": "${{ env.title }}",
+                "description": "${{ env.description }}",
+                "color": ${ env.color }
+              }
+            ]
