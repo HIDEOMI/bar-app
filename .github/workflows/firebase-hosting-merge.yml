@@ -2,6 +2,7 @@
 # https://github.com/firebase/firebase-tools
 
 name: Deploy to Firebase Hosting on merge
+
 on:
   push:
     branches:
@@ -11,6 +12,7 @@ on:
       - 'src/**'
       # package.jsonが更新された時
       - 'package.json'
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
@@ -38,6 +40,3 @@ jobs:
           description: '${{ needs.build_and_deploy.result == "success" && "Deploy to Firebase Hosting was successful." || "Deploy failed." }}'
           author_name: 'GitHub Actions'
           author_url: 'https://github.com/'
-
-
-https://discord.com/api/webhooks/1293465461543014480/C_4M8ClQ2f1rKoykBeIOiR8O7D5PB2VTKec6xnGDKMNOG0Kl5qY0w9wTQ33VWQrQh7F0
