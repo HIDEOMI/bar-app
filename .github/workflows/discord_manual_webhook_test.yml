@@ -35,7 +35,7 @@ jobs:
           if [[ "${{ needs.build_and_deploy.outputs.result }}" == "success" ]]; then
             message='{"text": "ビルドとデプロイが成功しました！ 🎉"}'
           else
-          message='{"text": "ビルドとデプロイに失敗しました。エラーメッセージを確認してください。 ❌"}'
+            message='{"text": "ビルドとデプロイに失敗しました。エラーメッセージを確認してください。 ❌"}'
           fi
         
           # Discordにメッセージを送信
