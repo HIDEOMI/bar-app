@@ -25,19 +25,19 @@ jobs:
         id: set_result
         run: |
           result=$(cat result.txt)
-          echo "::set-output name=result::$result"
+          echo "RESULT=$result" >> $GITHUB_ENV  # 環境変数に設定
+
   notify:
     runs-on: ubuntu-latest
     needs: build_and_deploy
     steps:
       - name: Discord Message Notify
         run: |
-          if [[ "${{ needs.build_and_deploy.outputs.result }}" == "success" ]]; then
-            message='{"text": "ビルドとデプロイが成功しました！ 🎉"}'
+          if [[ "${{ env.RESULT }}" == "success" ]]; then
+            message='{"content": "ビルドとデプロイが成功しました！ 🎉"}'
           else
-            message='{"text": "ビルドとデプロイに失敗しました。エラーメッセージを確認してください。 ❌"}'
+            message='{"content": "ビルドとデプロイに失敗しました。エラーメッセージを確認してください。 ❌"}'
           fi
         
           # Discordにメッセージを送信
-          curl -X POST -H 'Content-type: application/json' --data "$message" ${{ secrets.DISCORD_WEBHOOK_URL }}
-          # run: curl -X POST -F content="hello world" ${{ secrets.DISCORD_WEBHOOK_URL }}
+          curl -X POST -H 'Content-Type: application/json' --data "$message" ${{ secrets.DISCORD_WEBHOOK_URL }}
