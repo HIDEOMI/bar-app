@@ -38,3 +38,4 @@ jobs:
           title: "テストメッセージ"
           message: "これはテストです。"
           colour: 3066993  # 色を数値で指定
+        if: ${{ always() }}
