@@ -23,7 +23,6 @@ const Products: React.FC = () => {
         description: "",
         summary: "",
         categories: [],
-        bases: [],
         color: "",
         alc: 0,
         alc_taste: "",
@@ -42,9 +41,9 @@ const Products: React.FC = () => {
     });
 
     const categoriesList = ['カクテル', 'ビール', 'ワイン'];  // カテゴリの選択肢
-    const statusesList = ['All', 'Ready', 'Done', '見つからない', ''];  // ステータスの選択肢
-    const baseMaterials = ['ウイスキー', 'ドライ・ジン', 'ウォッカ', 'ホワイト・ラム'];  // ベースリスト
-    const baseList = ['All', ...baseMaterials];  // ベースの選択肢
+    const statusesList = ['All', 'Ready', '見つからない', ''];  // ステータスの選択肢
+    // const baseMaterials = ['ウイスキー', 'ドライ・ジン', 'ウォッカ', 'ホワイト・ラム'];  // ベースリスト
+    // const baseList = ['All', ...baseMaterials];  // ベースの選択肢
 
     /** react-select 用の材料オプション
      * labelで昇順に並べ替え
@@ -64,6 +63,19 @@ const Products: React.FC = () => {
             try {
                 const allMaterialsData = await getAllMaterials();
                 setAllMaterials(allMaterialsData);
+            } catch (error) {
+                console.error("Error fetching datas: ", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDatas();
+    }, []);
+
+    useEffect(() => {
+        const fetchDatas = async () => {
+            setLoading(true);
+            try {
                 const filteredProducts = await getFilteredProducts(selectedStatus, selectedBases);
                 setFilteredProducts(filteredProducts);
             } catch (error) {
@@ -73,7 +85,7 @@ const Products: React.FC = () => {
             }
         };
         fetchDatas();
-    }, [selectedStatus, selectedBases]);
+    }, [selectedStatus, selectedBases, allProducts]);
 
 
     /** メッセージを一定時間表示した後に非表示にする処理 */
@@ -93,7 +105,6 @@ const Products: React.FC = () => {
             description: "",
             summary: "",
             categories: [],
-            bases: [],
             color: "",
             alc: 0,
             alc_taste: "",
@@ -378,20 +389,6 @@ const Products: React.FC = () => {
                         ))}
                     </select>
                     <br />
-                    <label>ベース: </label>
-                    <select
-                        name="bases"
-                        multiple
-                        value={formProduct.bases}
-                        onChange={handleSelectChange}
-                    >
-                        {baseList.map(base => (
-                            <option key={base} value={base}>
-                                {base}
-                            </option>
-                        ))}
-                    </select>
-                    <br />
                     <label>色: </label>
                     <input
                         type="text"
@@ -511,17 +508,23 @@ const Products: React.FC = () => {
                                         >
                                             <>
                                                 <h4>{product.name}</h4>
-                                                値段: ¥ {product.price.toLocaleString()} <br />
-                                                カテゴリ: {product.categories.join(', ')} <br />
-                                                ベース: {product.bases.join(', ')} <br />
-                                                アルコール度数: {product.alc}% <br />
-                                                オススメ: {product.recommendation} <br />
-                                                カクテル言葉: {product.word} <br />
-                                                誕生日: {product.date} <br />
-                                                色: {product.color} <br />
-                                                在庫: {product.isAvailable ? 'あり' : 'なし'} <br />
+                                                {/* 値段: ¥ {product.price.toLocaleString()} <br /> */}
+                                                {/* 在庫: {product.isAvailable ? 'あり' : 'なし'} <br /> */}
+                                                {/* カテゴリ: {product.categories.join(', ')} <br /> */}
+                                                {/* アルコール度数: {product.alc}% <br /> */}
+                                                {/* オススメ: {product.recommendation} <br /> */}
+                                                {/* カクテル言葉: {product.word} <br /> */}
+                                                {/* 誕生日: {product.date} <br /> */}
+                                                {/* 色: {product.color} <br /> */}
                                                 技法： {product.method} <br />
-                                                レシピ: {product.recipe} <br />
+                                                レシピ:<br />
+                                                {/* 文字は小さくする */}
+                                                 {product.recipe.split('\n').map((line, index) => (
+                                                    <span key={index}>
+                                                        {line}
+                                                        <br />
+                                                    </span>
+                                                ))}
                                                 材料: {product.materials.map(m => m.name).join(', ')} <br />
                                                 準備完了： {product.already} <br />
                                                 <button onClick={() => handleEditProduct(product)}>編集</button>

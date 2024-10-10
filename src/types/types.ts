@@ -15,7 +15,6 @@ export type Product = {
     description: string;     // 商品の説明詳細
     summary: string;         // 商品の説明概要
     categories: string[];
-    bases: string[];         // ベースになっているお酒
     color: string;
     alc: number;             // アルコール度数
     alc_taste: string;       // アルコール度数に対する階級

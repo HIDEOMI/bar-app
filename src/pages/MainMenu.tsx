@@ -35,7 +35,7 @@ const MainMenu: React.FC = () => {
         .map(material => ({
             value: material.name,
             label: material.name,
-        }));
+        })).sort((a, b) => a.label.localeCompare(b.label));;
 
 
     // ページロード時にカート情報を復元
@@ -81,7 +81,6 @@ const MainMenu: React.FC = () => {
                 filterAndSetProducts();
             } catch (error) {
                 console.error("Error fetching datas: ", error);
-                console.error("Error fetching datas: ", error);
             } finally {
                 setLoading(false);
             }
@@ -102,12 +101,26 @@ const MainMenu: React.FC = () => {
             : productsByCategory.filter(product => product.isAvailable);
 
         // 準備完了の商品のみ表示
-        const alreadyProducts = filteredProducts.filter(product => (product.already === "Ready" || product.already === "Done"));
+        const alreadyProducts = filteredProducts.filter(product => (product.already === "Ready"));
+
+        // オススメ、アルコール度数でソート
+        const sortedProducts = alreadyProducts.sort((a, b) => {
+            // 数字として比較するために、数値に変換
+            // 文字列として比較
+            if (a.recommendation < b.recommendation) return 1;
+            if (a.recommendation > b.recommendation) return -1;
+            // recommendation が同じ場合、alc_taste で比較
+            if (a.alc_taste < b.alc_taste) return -1;
+            if (a.alc_taste > b.alc_taste) return 1;
+            return 0; // 同じ場合
+        });
+
+        console.log("Sorted Products: ", sortedProducts);
 
         // 状態を変えたら1ページに戻る
-        const productsByPage = await getProductsByPage(alreadyProducts, 1, countInPage);
+        const productsByPage = await getProductsByPage(sortedProducts, 1, countInPage);
 
-        setProducts(alreadyProducts);
+        setProducts(sortedProducts);
         setProductsByPage(productsByPage);
         setPage(1);
     };
@@ -258,7 +271,7 @@ const MainMenu: React.FC = () => {
                 </select> */}
 
                 <br />
-                <label>※在庫切れ商品も表示する場合はチェックを入れる </label>
+                <label>※在庫切れ商品も表示する場合はチェックする </label>
                 <input type="checkbox" checked={isAvailable} onChange={handleShowHideOutOfStock} />
 
                 <br />
@@ -285,11 +298,26 @@ const MainMenu: React.FC = () => {
                                             {/* <img src={product.imageUrl} alt="画像募集中！" width="100" /> */}
                                             <h4>{product.name}</h4>
                                             <p
+                                                style={{
+                                                    color: "red",
+                                                    fontSize: "small",
+                                                }}
+                                            >
+                                                {product.recommendation}
+                                            </p>
+                                            <p
+                                                style={{
+                                                    color: "blue",
+                                                    fontSize: "small",
+                                                }}
+                                            >
+                                                {product.alc_taste}
+                                            </p>
+                                            <p
                                                 style={{ fontSize: "small" }}
                                             >
                                                 {product.summary}
                                             </p>
-                                            {/* 材料の文字列サイズは小さい */}
                                             <p
                                                 style={{
                                                     fontSize: "small",

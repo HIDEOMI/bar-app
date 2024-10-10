@@ -24,8 +24,8 @@ const Materials: React.FC = () => {
     });
     const [pendingUpdates, setPendingUpdates] = useState<{ [key: string]: any; id: string }[]>([]);
 
-    const categories = ['choose a category', '醸造酒', '蒸留酒', 'リキュール', 'ソフトドリンク', 'シロップ', 'その他'];  // カテゴリの選択肢
-    const filterCategories = ['All', '醸造酒', '蒸留酒', 'リキュール', 'ソフトドリンク', 'シロップ', 'その他'];  // カテゴリの選択肢
+    const categories = ['醸造酒', '蒸留酒', 'リキュール', 'ソフトドリンク', 'シロップ', '生もの', 'その他'];  // カテゴリの選択肢
+    const filterCategories = ['All', ...categories];  // カテゴリの選択肢
 
     useEffect(() => {
         const fetchDatas = async () => {
@@ -40,7 +40,7 @@ const Materials: React.FC = () => {
             }
         };
         fetchDatas();
-    }, [selectedCategory]);
+    }, [selectedCategory,]);
 
     /** フォームのリセット処理 */
     const resetForm = () => {
@@ -154,6 +154,8 @@ const Materials: React.FC = () => {
         await Promise.all(updatePromises);
         setPendingUpdates([]);
         window.confirm('変更を保存しました');
+        const allMaterials = await getAllMaterials();
+        setMaterials(allMaterials);
     }
 
     /** 材料の値を変更したときに変更内容を保持するハンドラ */
@@ -203,6 +205,10 @@ const Materials: React.FC = () => {
                     value={formMaterial.category}
                     onChange={handleChange}
                 >
+                    {/* 初期値を設定 */}
+                    <option value="" selected disabled>
+                        choose a category
+                    </option>
                     {categories.map((category) => (
                         <option key={category} value={category}>
                             {category}

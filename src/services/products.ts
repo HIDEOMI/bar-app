@@ -42,9 +42,25 @@ export const getProductsByPage = async (products: Product[], page: number, count
     console.log("対象ページ：" + page);
     console.log("表示件数：" + countInPage);
     console.log("==== ページネーション実行 ====");
-    const productsByPage = products.sort((a, b) => a.name.localeCompare(b.name)).slice(countInPage * (page - 1), countInPage * (page));
+    const productsByPage = products.slice(countInPage * (page - 1), countInPage * (page));
     return productsByPage;
 };
+
+export const sortProducts = async (products: Product[], sortKey: string) => {
+    console.log("ソートキー：" + sortKey);
+    console.log("==== ソート実行 ====");
+    const sortedProducts = products.sort((a, b) => {
+        // 数字として比較するために、数値に変換
+        // 文字列として比較
+        if (a.recommendation < b.recommendation) return 1;
+        if (a.recommendation > b.recommendation) return -1;
+        // recommendation が同じ場合、alc_taste で比較
+        if (a.alc_taste < b.alc_taste) return -1;
+        if (a.alc_taste > b.alc_taste) return 1;
+        return 0; // 同じ場合
+    });
+    return sortedProducts;
+}
 
 /** 指定したカテゴリ, ステータスの商品リストを取得する関数 */
 export const getFilteredProducts = async (status: string, materialNames?: string[]) => {
